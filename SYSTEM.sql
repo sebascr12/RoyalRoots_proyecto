@@ -10,15 +10,15 @@ CREATE USER royalRoots IDENTIFIED BY royalRoots;
 ALTER SYSTEM SET common_user_prefix='' scope=spfile;
  
 /
-Grant CREATE session TO royalRoots;
+Grant CREATE session TO ROYALROOTS;
  
 /
-Grant DBA to royalRoots;
+Grant DBA to ROYALROOTS;
  
 /
-Grant resource to royalRoots;
+Grant resource to ROYALROOTS;
 /
-GRANT CONNECT TO royalRoots; 
+GRANT CONNECT TO ROYALROOTS; 
 /
 --ver tablespace
 select tablespace_name, file_name, bytes /1024/1024 as size_mb
@@ -42,3 +42,5 @@ datafile 'C:\APP\SPINA\PRODUCT\21C\ORADATA\XE\XEPDB1\FIDE_ROYALROOTS_TBS.DBF' si
 
 --AUDITORIA
 GRANT AUDIT_ADMIN TO ROYALROOTS;
+
+SHOW CON_NAME;
