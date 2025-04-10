@@ -1,0 +1,20 @@
+{% extends 'direcciones/base_direcciones.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Actualizar Provincia</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.nuevo_nombre.label_tag }}
+            {{ form.nuevo_nombre }}
+        </div>
+        <div class="mb-3">
+            {{ form.estado.label_tag }}
+            {{ form.estado }}
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+        <a href="{% url 'listar_provincias' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
