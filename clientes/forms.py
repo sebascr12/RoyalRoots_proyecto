@@ -4,7 +4,8 @@ from clientes.oracle_service import obtener_estados_disponibles, obtener_servici
 from clientes.oracle_service import (
     obtener_estados_disponibles,
     obtener_servicios_disponibles,
-    generar_direcciones_disponibles
+    generar_direcciones_disponibles,
+    obtener_direcciones_disponibles
 )
 from direcciones.oracle_service import (
     obtener_provincias_disponibles,
@@ -73,7 +74,7 @@ class ClienteForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['direccion'].choices = [(d, d) for d in generar_direcciones_disponibles()]
+        self.fields['direccion'].choices = [(d, d) for d in obtener_direcciones_disponibles()]
         self.fields['estado'].choices = [(e, e) for e in obtener_estados_disponibles()]
 
 
@@ -91,5 +92,5 @@ class ActualizarClienteForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['direccion'].choices = [(d, d) for d in generar_direcciones_disponibles()]
+        self.fields['direccion'].choices = [(d, d) for d in obtener_direcciones_disponibles()]
         self.fields['estado'].choices = [(e, e) for e in obtener_estados_disponibles()]
