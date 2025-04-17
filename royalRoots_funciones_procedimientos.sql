@@ -1315,6 +1315,15 @@ BEGIN
     v_id_direccion := FIDE_DIRECCION_TB_OBTENER_ID_DIRECCION_FN(UPPER(p_direccion_desc));
     v_id_estado    := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
 
+    -- Validación para evitar errores por valores NULL
+    IF v_id_direccion IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'ERROR: Dirección no válida: ' || p_direccion_desc);
+    END IF;
+
+    IF v_id_estado IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20002, 'ERROR: Estado no válido: ' || p_estado_desc);
+    END IF;
+
     -- Obtener ID automático
     SELECT FIDE_CLIENTES_TB_SEQ.NEXTVAL INTO v_id_cliente FROM DUAL;
 
@@ -1325,7 +1334,7 @@ BEGIN
     ) VALUES (
         v_id_cliente,
         UPPER(p_nombre_cliente),
-        (p_telefono_cliente),
+        p_telefono_cliente,
         UPPER(p_correo_cliente),
         TRUNC(TO_DATE(p_fecha_registro, 'DD/MM/YYYY')),
         v_id_direccion,
@@ -1435,7 +1444,12 @@ END;
 
 
 
-
+SELECT 
+    PR.PROVINCIA || ' - ' || CA.CANTON || ' - ' || DI.DISTRITO AS DESCRIPCION
+FROM FIDE_DIRECCION_TB DIR
+JOIN FIDE_PROVINCIA_TB PR ON DIR.ID_PROVINCIA = PR.ID_PROVINCIA
+JOIN FIDE_CANTON_TB    CA ON DIR.ID_CANTON = CA.ID_CANTON
+JOIN FIDE_DISTRITO_TB DI ON DIR.ID_DISTRITO = DI.ID_DISTRITO;
 
 
 
@@ -1553,7 +1567,7 @@ END;
 
 
 
-select * from FIDE_servicios_TB;
+select * from FIDE_direccion_TB;
 
 ALTER SESSION SET CONTAINER = XEPDB1;
 SHOW CON_NAME;
