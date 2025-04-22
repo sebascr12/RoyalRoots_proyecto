@@ -1607,23 +1607,6 @@ JOIN FIDE_CANTON_TB    CA ON DIR.ID_CANTON = CA.ID_CANTON
 JOIN FIDE_DISTRITO_TB DI ON DIR.ID_DISTRITO = DI.ID_DISTRITO;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 --obtener nombres de la direccion por id_direccion
 CREATE OR REPLACE FUNCTION FIDE_DIRECCION_TB_OBTENER_PROVINCIA_FN (
     p_id_direccion IN NUMBER
@@ -1697,12 +1680,6 @@ EXCEPTION
     WHEN OTHERS THEN RETURN NULL;
 END;
 /
-
-
-
-
-
-
 
 --modulo productos
 CREATE OR REPLACE FUNCTION FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN (
@@ -2136,7 +2113,332 @@ END;
 /
 
 
---Facturacion
+--FACTURACION
+--fide_metodo_pago
+CREATE OR REPLACE PROCEDURE FIDE_METODO_PAGO_TB_INSERTAR_SP (
+    p_nombre_metodo IN VARCHAR2,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_metodo_pago NUMBER;
+    v_id_estado NUMBER;
+BEGIN
+    v_id_metodo_pago := FIDE_METODO_PAGO_TB_SEQ.NEXTVAL;
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_METODO_PAGO_TB (
+        ID_METODO_PAGO, NOMBRE_METODO, ID_ESTADO
+    ) VALUES (
+        v_id_metodo_pago, UPPER(p_nombre_metodo), v_id_estado
+    );
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_METODO_PAGO_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            M.ID_METODO_PAGO,
+            M.NOMBRE_METODO,
+            E.DESCRIPCION AS ESTADO
+        FROM FIDE_METODO_PAGO_TB M
+        JOIN FIDE_ESTADO_TB E ON M.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_METODO_PAGO_TB_ACTUALIZAR_SP (
+    p_id_metodo_pago IN NUMBER,
+    p_nuevo_nombre IN VARCHAR2,
+    p_nuevo_estado IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_nuevo_estado));
+
+    UPDATE FIDE_METODO_PAGO_TB
+    SET 
+        NOMBRE_METODO = UPPER(p_nuevo_nombre),
+        ID_ESTADO = v_id_estado
+    WHERE ID_METODO_PAGO = p_id_metodo_pago;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_METODO_PAGO_TB_INACTIVAR_SP (
+    p_id_metodo_pago IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_METODO_PAGO_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_METODO_PAGO = p_id_metodo_pago;
+
+    COMMIT;
+END;
+/
+
+
+
+--historial pago
+CREATE OR REPLACE PROCEDURE FIDE_HISTORIAL_PAGOS_TB_INSERTAR_SP (
+    p_nombre_cliente IN VARCHAR2,
+    p_monto IN NUMBER,
+    p_fecha_pago IN DATE,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_pago NUMBER;
+    v_id_cliente NUMBER;
+    v_id_estado NUMBER;
+BEGIN
+    v_id_pago := FIDE_HISTORIAL_PAGOS_TB_SEQ.NEXTVAL;
+    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(UPPER(p_nombre_cliente));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_HISTORIAL_PAGOS_TB (
+        ID_PAGO, ID_CLIENTE, MONTO, FECHA_PAGO, ID_ESTADO
+    ) VALUES (
+        v_id_pago, v_id_cliente, p_monto, TRUNC(p_fecha_pago), v_id_estado
+    );
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_HISTORIAL_PAGOS_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+    SELECT 
+        H.ID_PAGO,
+        C.NOMBRE_CLIENTE,
+        H.MONTO,
+        TO_CHAR(H.FECHA_PAGO, 'DD/MM/YYYY') AS FECHA,
+        E.DESCRIPCION AS ESTADO
+    FROM FIDE_HISTORIAL_PAGOS_TB H
+    JOIN FIDE_CLIENTES_TB C ON H.ID_CLIENTE = C.ID_CLIENTE
+    JOIN FIDE_ESTADO_TB E ON H.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_HISTORIAL_PAGOS_TB_ACTUALIZAR_SP (
+    p_id_pago IN NUMBER,
+    p_monto IN NUMBER,
+    p_fecha_pago IN DATE,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    UPDATE FIDE_HISTORIAL_PAGOS_TB
+    SET 
+        MONTO = p_monto,
+        FECHA_PAGO = TRUNC(p_fecha_pago),
+        ID_ESTADO = v_id_estado
+    WHERE ID_PAGO = p_id_pago;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_HISTORIAL_PAGOS_TB_INACTIVAR_SP (
+    p_id_pago IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_HISTORIAL_PAGOS_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_PAGO = p_id_pago;
+END;
+/
+
+
+
+--facturas
+CREATE OR REPLACE PROCEDURE FIDE_FACTURAS_TB_INSERTAR_SP (
+    p_nombre_cliente IN VARCHAR2,
+    p_nombre_metodo_pago IN VARCHAR2,
+    p_fecha_emision IN DATE,
+    p_total IN NUMBER,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_cliente NUMBER;
+    v_id_metodo_pago NUMBER;
+    v_id_estado NUMBER;
+BEGIN
+    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(UPPER(p_nombre_cliente));
+    v_id_metodo_pago := FIDE_METODO_PAGO_TB_OBTENER_ID_METODO_PAGO_FN(UPPER(p_nombre_metodo_pago));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_FACTURAS_TB (
+        ID_CLIENTE, FECHA_EMISION, TOTAL, ID_METODO_PAGO, ID_ESTADO
+    ) VALUES (
+        v_id_cliente, TRUNC(p_fecha_emision), p_total, v_id_metodo_pago, v_id_estado
+    );
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_FACTURAS_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+    SELECT 
+        F.ID_FACTURA,
+        C.NOMBRE_CLIENTE,
+        TO_CHAR(F.FECHA_EMISION, 'DD/MM/YYYY') AS FECHA,
+        F.TOTAL,
+        M.NOMBRE_METODO,
+        E.DESCRIPCION AS ESTADO
+    FROM FIDE_FACTURAS_TB F
+    JOIN FIDE_CLIENTES_TB C ON F.ID_CLIENTE = C.ID_CLIENTE
+    JOIN FIDE_METODO_PAGO_TB M ON F.ID_METODO_PAGO = M.ID_METODO_PAGO
+    JOIN FIDE_ESTADO_TB E ON F.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_FACTURAS_TB_ACTUALIZAR_SP (
+    p_id_factura IN NUMBER,
+    p_total IN NUMBER,
+    p_fecha_emision IN DATE,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    UPDATE FIDE_FACTURAS_TB
+    SET 
+        TOTAL = p_total,
+        FECHA_EMISION = TRUNC(p_fecha_emision),
+        ID_ESTADO = v_id_estado
+    WHERE ID_FACTURA = p_id_factura;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_FACTURAS_TB_INACTIVAR_SP (
+    p_id_factura IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_FACTURAS_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_FACTURA = p_id_factura;
+END;
+/
+
+--detalle facturas
+CREATE OR REPLACE FUNCTION FIDE_FACTURAS_TB_OBTENER_ID_FACTURA_FN(p_id_factura IN VARCHAR2)
+RETURN NUMBER IS
+    v_id NUMBER;
+BEGIN
+    SELECT ID_FACTURA INTO v_id
+    FROM FIDE_FACTURAS_TB
+    WHERE TO_CHAR(ID_FACTURA) = p_id_factura; -- o usa formato especial si fuera el caso
+    RETURN v_id;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_DETALLE_FACTURAS_TB_INSERTAR_SP (
+    p_id_factura_str IN VARCHAR2,
+    p_nombre_producto IN VARCHAR2,
+    p_subtotal IN NUMBER,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_factura NUMBER;
+    v_id_producto NUMBER;
+    v_id_estado NUMBER;
+    v_id_detalle NUMBER;
+BEGIN
+    v_id_factura := FIDE_FACTURAS_TB_OBTENER_ID_FACTURA_FN(p_id_factura_str);
+    v_id_producto := FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN(UPPER(p_nombre_producto));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+    v_id_detalle := FIDE_DETALLE_FACTURAS_TB_SEQ.NEXTVAL;
+
+    INSERT INTO FIDE_DETALLE_FACTURAS_TB (
+        ID_DETALLE, ID_FACTURA, ID_PRODUCTO, SUBTOTAL, ID_ESTADO
+    ) VALUES (
+        v_id_detalle, v_id_factura, v_id_producto, p_subtotal, v_id_estado
+    );
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_DETALLE_FACTURAS_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+    SELECT 
+        D.ID_DETALLE,
+        TO_CHAR(F.ID_FACTURA) AS FACTURA,
+        P.NOMBRE_PRODUCTO,
+        D.SUBTOTAL,
+        E.DESCRIPCION AS ESTADO
+    FROM FIDE_DETALLE_FACTURAS_TB D
+    JOIN FIDE_FACTURAS_TB F ON D.ID_FACTURA = F.ID_FACTURA
+    JOIN FIDE_PRODUCTO_TB P ON D.ID_PRODUCTO = P.ID_PRODUCTO
+    JOIN FIDE_ESTADO_TB E ON D.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_DETALLE_FACTURAS_TB_ACTUALIZAR_SP (
+    p_id_detalle IN NUMBER,
+    p_subtotal IN NUMBER,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    UPDATE FIDE_DETALLE_FACTURAS_TB
+    SET 
+        SUBTOTAL = p_subtotal,
+        ID_ESTADO = v_id_estado
+    WHERE ID_DETALLE = p_id_detalle;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_DETALLE_FACTURAS_TB_INACTIVAR_SP (
+    p_id_detalle IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_DETALLE_FACTURAS_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_DETALLE = p_id_detalle;
+END;
+/
+
 CREATE OR REPLACE FUNCTION FIDE_METODO_PAGO_TB_OBTENER_ID_METODO_PAGO_FN(
     p_nombre_metodo VARCHAR2
 ) RETURN NUMBER IS
@@ -2193,6 +2495,31 @@ BEGIN
         );
 END;
 /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2288,7 +2615,7 @@ END;
 
 
 
-select * from FIDE_empleados_TB;
+select * from FIDE_FACTURAS_TB;
 
 ALTER SESSION SET CONTAINER = XEPDB1;
 SHOW CON_NAME;
