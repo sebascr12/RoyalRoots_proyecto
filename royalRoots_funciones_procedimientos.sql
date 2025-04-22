@@ -62,44 +62,51 @@ END;
 
 --PROCEDIMIENTOS
 CREATE OR REPLACE PROCEDURE FIDE_EMPLEADOS_TB_INSERTAR_EMPLEADO_SP (
-    p_nombre IN VARCHAR2,
-    p_apellido IN VARCHAR2,
-    p_correo IN VARCHAR2,
-    p_telefono IN VARCHAR2,
-    p_fecha IN DATE,
-    p_salario IN NUMBER,
-    p_funcion_nombre IN VARCHAR2,
-    p_hora_inicio IN TIMESTAMP,
-    p_hora_fin IN TIMESTAMP,
-    p_estado_nombre IN VARCHAR2
+    p_nombre          IN VARCHAR2,
+    p_apellido        IN VARCHAR2,
+    p_correo          IN VARCHAR2,
+    p_telefono        IN VARCHAR2,
+    p_fecha           IN DATE,
+    p_salario         IN NUMBER,
+    p_funcion_nombre  IN VARCHAR2,
+    p_hora_inicio     IN TIMESTAMP,
+    p_hora_fin        IN TIMESTAMP,
+    p_estado_nombre   IN VARCHAR2
 )
 AS
-    v_funcion_id  NUMBER;
-    v_estado_id   NUMBER;
-    v_turno_id    NUMBER;
-    v_empleado_id NUMBER;
+    v_funcion_id   NUMBER;
+    v_estado_id    NUMBER;
+    v_turno_id     NUMBER;
+    v_empleado_id  NUMBER;
 BEGIN
+    -- Obtener ID de la función
     SELECT ID_FUNCION INTO v_funcion_id
     FROM FIDE_EMPLEADOS_FUNCION_TB
-    WHERE NOMBRE_FUNCION = p_funcion_nombre;
+    WHERE UPPER(NOMBRE_FUNCION) = UPPER(p_funcion_nombre);
 
+    -- Obtener ID del estado
     SELECT ID_ESTADO INTO v_estado_id
     FROM FIDE_ESTADO_TB
-    WHERE DESCRIPCION = p_estado_nombre;
+    WHERE UPPER(DESCRIPCION) = UPPER(p_estado_nombre);
 
+    -- Obtener ID del turno con comparación robusta de hora
     SELECT ID_TURNO INTO v_turno_id
     FROM FIDE_TURNOS_TB
-    WHERE HORA_INICIO = p_hora_inicio AND HORA_FIN = p_hora_fin;
+    WHERE 
+        TO_CHAR(HORA_INICIO, 'HH24:MI') = TO_CHAR(p_hora_inicio, 'HH24:MI')
+        AND TO_CHAR(HORA_FIN, 'HH24:MI') = TO_CHAR(p_hora_fin, 'HH24:MI');
 
+    -- Obtener nuevo ID para el empleado
     SELECT FIDE_EMPLEADOS_TB_SEQ.NEXTVAL INTO v_empleado_id FROM DUAL;
 
+    -- Insertar nuevo empleado
     INSERT INTO FIDE_EMPLEADOS_TB (
         ID_EMPLEADO, NOMBRE_EMPLEADO, APELLIDO_EMPLEADO, ADMIN_CORREO,
         TELEFONO, FECHA_CONTRATACION, SALARIO,
         ID_FUNCION, ID_TURNO, ID_ESTADO
     ) VALUES (
-        v_empleado_id, p_nombre, p_apellido, p_correo,
-        p_telefono, p_fecha, p_salario,
+        v_empleado_id, UPPER(p_nombre), UPPER(p_apellido), UPPER(p_correo),
+        p_telefono, TRUNC(p_fecha), p_salario,
         v_funcion_id, v_turno_id, v_estado_id
     );
 
@@ -211,7 +218,7 @@ END;
 /
 
 
-
+select * from fide_reservas_tb
 
 --FIDE TURNOS
 CREATE OR REPLACE PROCEDURE FIDE_TURNOS_TB_INSERTAR_TURNO_SP(
@@ -567,12 +574,160 @@ END;
 
 
 
+CREATE OR REPLACE PROCEDURE FIDE_RESERVAS_TB_INSERTAR_SP (
+    p_cliente_nombre IN VARCHAR2,
+    p_empleado_correo IN VARCHAR2,
+    p_servicio_nombre IN VARCHAR2,
+    p_fecha_hora IN VARCHAR2,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_cliente NUMBER;
+    v_id_empleado NUMBER;
+    v_id_servicio NUMBER;
+    v_id_estado NUMBER;
+    v_id_reserva NUMBER;
+BEGIN
+    -- Buscar IDs desde valores visibles
+    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(p_cliente_nombre);
+    v_id_empleado := FIDE_EMPLEADOS_TB_OBTENER_ID_EMPLEADO_FN(p_empleado_correo);
+    v_id_servicio := FIDE_SERVICIOS_TB_OBTENER_ID_SERVICIO_FN(p_servicio_nombre);
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(p_estado_desc);
+    v_id_reserva := FIDE_RESERVAS_TB_SEQ.NEXTVAL;
+
+    INSERT INTO FIDE_RESERVAS_TB (
+        ID_RESERVA, ID_CLIENTE, ID_EMPLEADO, ID_SERVICIO,
+        FECHA_HORA, ID_ESTADO
+    ) VALUES (
+        v_id_reserva, v_id_cliente, v_id_empleado, v_id_servicio,
+        TO_TIMESTAMP(p_fecha_hora, 'DD/MM/YYYY HH24:MI'), v_id_estado
+    );
+
+    COMMIT;
+END;
+/
 
 
 
+CREATE OR REPLACE PROCEDURE FIDE_RESERVAS_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            R.ID_RESERVA,
+            C.NOMBRE_CLIENTE,
+            S.NOMBRE_SERVICIO,
+            E.NOMBRE_EMPLEADO || ' ' || E.APELLIDO_EMPLEADO AS EMPLEADO,
+            TO_CHAR(R.FECHA_HORA, 'DD/MM/YYYY HH24:MI') AS FECHA_HORA,
+            EST.DESCRIPCION AS ESTADO
+        FROM FIDE_RESERVAS_TB R
+        JOIN FIDE_CLIENTES_TB C ON R.ID_CLIENTE = C.ID_CLIENTE
+        JOIN FIDE_SERVICIOS_TB S ON R.ID_SERVICIO = S.ID_SERVICIO
+        JOIN FIDE_EMPLEADOS_TB E ON R.ID_EMPLEADO = E.ID_EMPLEADO
+        JOIN FIDE_ESTADO_TB EST ON R.ID_ESTADO = EST.ID_ESTADO;
+END;
+/
 
 
 
+CREATE OR REPLACE PROCEDURE FIDE_RESERVAS_TB_INACTIVAR_SP (
+    p_id_reserva IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    -- Obtener el ID del estado INACTIVO
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    -- Actualizar el estado de la reserva (sin modificar atributos de auditoría directamente)
+    UPDATE FIDE_RESERVAS_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_RESERVA = p_id_reserva;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_CLIENTES_TB_LISTAR_NOMBRES_SP (
+    p_cursor OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT NOMBRE_CLIENTE FROM FIDE_CLIENTES_TB WHERE ID_ESTADO = FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('ACTIVO');
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_EMPLEADOS_TB_LISTAR_CORREOS_SP (
+    p_cursor OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT ADMIN_CORREO FROM FIDE_EMPLEADOS_TB WHERE ID_ESTADO = FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('ACTIVO');
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_EMPLEADOS_TB_LISTAR_CORREOS_SP (
+    p_cursor OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT ADMIN_CORREO FROM FIDE_EMPLEADOS_TB WHERE ID_ESTADO = FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('ACTIVO');
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_SERVICIOS_TB_LISTAR_NOMBRES_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT NOMBRE_SERVICIO
+        FROM FIDE_SERVICIOS_TB
+        WHERE ID_ESTADO = (
+            SELECT ID_ESTADO FROM FIDE_ESTADO_TB WHERE UPPER(DESCRIPCION) = 'ACTIVO'
+        );
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_RESERVAS_TB_ACTUALIZAR_SP (
+    p_id_reserva      IN NUMBER,
+    p_cliente_nombre  IN VARCHAR2,
+    p_empleado_correo IN VARCHAR2,
+    p_servicio_nombre IN VARCHAR2,
+    p_fecha_hora      IN VARCHAR2,
+    p_estado_desc     IN VARCHAR2
+)
+AS
+    v_id_cliente   NUMBER;
+    v_id_empleado  NUMBER;
+    v_id_servicio  NUMBER;
+    v_id_estado    NUMBER;
+BEGIN
+    -- Obtener los IDs desde los valores legibles
+    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(UPPER(p_cliente_nombre));
+    v_id_empleado := FIDE_EMPLEADOS_TB_OBTENER_ID_EMPLEADO_FN(UPPER(p_empleado_correo));
+    v_id_servicio := FIDE_SERVICIOS_TB_OBTENER_ID_SERVICIO_FN(UPPER(p_servicio_nombre));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    -- Actualizar la reserva
+    UPDATE FIDE_RESERVAS_TB
+    SET
+        ID_CLIENTE   = v_id_cliente,
+        ID_EMPLEADO  = v_id_empleado,
+        ID_SERVICIO  = v_id_servicio,
+        FECHA_HORA   = TO_DATE(p_fecha_hora, 'DD/MM/YYYY HH24:MI'),
+        ID_ESTADO    = v_id_estado
+    WHERE ID_RESERVA = p_id_reserva;
+
+    COMMIT;
+END;
+/
 
 
 
@@ -1526,10 +1681,6 @@ EXCEPTION
     WHEN OTHERS THEN RETURN NULL;
 END;
 /
-
-
-
-
 --clientes
 CREATE OR REPLACE FUNCTION FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN (
     p_nombre_cliente IN VARCHAR2
@@ -1553,6 +1704,495 @@ END;
 
 
 
+--modulo productos
+CREATE OR REPLACE FUNCTION FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN (
+    p_nombre_producto VARCHAR2
+) RETURN NUMBER
+IS
+    v_id_producto NUMBER;
+BEGIN
+    SELECT ID_PRODUCTO INTO v_id_producto
+    FROM FIDE_PRODUCTO_TB
+    WHERE UPPER(NOMBRE_PRODUCTO) = UPPER(TRIM(p_nombre_producto));
+
+    RETURN v_id_producto;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN NULL;
+    WHEN OTHERS THEN RETURN NULL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_PRODUCTO_TB_INSERTAR_SP (
+    p_nombre_producto IN VARCHAR2,
+    p_descripcion IN VARCHAR2,
+    p_precio_unitario IN NUMBER,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_producto NUMBER;
+    v_id_estado NUMBER;
+BEGIN
+    SELECT FIDE_PRODUCTO_TB_SEQ.NEXTVAL INTO v_id_producto FROM DUAL;
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_PRODUCTO_TB (
+        ID_PRODUCTO, NOMBRE_PRODUCTO, DESCRIPCION, PRECIO_UNITARIO, ID_ESTADO
+    ) VALUES (
+        v_id_producto, UPPER(p_nombre_producto), UPPER(p_descripcion), p_precio_unitario, v_id_estado
+    );
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_PRODUCTO_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            P.ID_PRODUCTO,
+            P.NOMBRE_PRODUCTO,
+            P.DESCRIPCION,
+            P.PRECIO_UNITARIO,
+            E.DESCRIPCION AS ESTADO
+        FROM FIDE_PRODUCTO_TB P
+        JOIN FIDE_ESTADO_TB E ON P.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_PRODUCTO_TB_ACTUALIZAR_SP (
+    p_id_producto IN NUMBER,
+    p_nuevo_nombre IN VARCHAR2,
+    p_nueva_descripcion IN VARCHAR2,
+    p_nuevo_precio IN NUMBER,
+    p_nuevo_estado_desc IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_nuevo_estado_desc));
+
+    UPDATE FIDE_PRODUCTO_TB
+    SET NOMBRE_PRODUCTO = UPPER(p_nuevo_nombre),
+        DESCRIPCION = UPPER(p_nueva_descripcion),
+        PRECIO_UNITARIO = p_nuevo_precio,
+        ID_ESTADO = v_id_estado
+    WHERE ID_PRODUCTO = p_id_producto;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_PRODUCTO_TB_INACTIVAR_SP (
+    p_id_producto IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_PRODUCTO_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_PRODUCTO = p_id_producto;
+
+    COMMIT;
+END;
+/
+
+--funcion auxiliar
+CREATE OR REPLACE FUNCTION FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN (
+    p_descripcion VARCHAR2
+) RETURN NUMBER
+IS
+    v_id_estado NUMBER;
+BEGIN
+    SELECT ID_ESTADO INTO v_id_estado
+    FROM FIDE_ESTADO_TB
+    WHERE UPPER(TRIM(DESCRIPCION)) = UPPER(TRIM(p_descripcion));
+
+    RETURN v_id_estado;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+    WHEN OTHERS THEN
+        RETURN NULL;
+END;
+/
+
+
+CREATE OR REPLACE FUNCTION FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN (
+    p_nombre_producto VARCHAR2
+) RETURN NUMBER IS
+    v_id_producto NUMBER;
+BEGIN
+    SELECT ID_PRODUCTO INTO v_id_producto
+    FROM FIDE_PRODUCTO_TB
+    WHERE UPPER(NOMBRE_PRODUCTO) = UPPER(TRIM(p_nombre_producto));
+
+    RETURN v_id_producto;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN NULL;
+    WHEN OTHERS THEN RETURN NULL;
+END;
+/
+
+
+--inventario
+CREATE OR REPLACE PROCEDURE FIDE_INVENTARIO_TB_INSERTAR_SP (
+    p_nombre_producto IN VARCHAR2,
+    p_cantidad        IN NUMBER,
+    p_fecha_actualizacion IN VARCHAR2,
+    p_estado_desc     IN VARCHAR2
+)
+AS
+    v_id_inventario NUMBER;
+    v_id_producto   NUMBER;
+    v_id_estado     NUMBER;
+BEGIN
+    v_id_inventario := FIDE_INVENTARIO_TB_SEQ.NEXTVAL;
+    v_id_producto   := FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN(UPPER(p_nombre_producto));
+    v_id_estado     := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_INVENTARIO_TB (
+        ID_INVENTARIO, CANTIDAD, FECHA_ACTUALIZACION, ID_PRODUCTO, ID_ESTADO
+    ) VALUES (
+        v_id_inventario, p_cantidad, TRUNC(TO_DATE(p_fecha_actualizacion, 'DD/MM/YYYY')), v_id_producto, v_id_estado
+    );
+
+    COMMIT;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_INVENTARIO_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            I.ID_INVENTARIO,
+            I.CANTIDAD,
+            TO_CHAR(I.FECHA_ACTUALIZACION, 'DD/MM/YYYY') AS FECHA_ACTUALIZACION,
+            P.NOMBRE_PRODUCTO,
+            E.DESCRIPCION AS ESTADO
+        FROM FIDE_INVENTARIO_TB I
+        JOIN FIDE_PRODUCTO_TB P ON I.ID_PRODUCTO = P.ID_PRODUCTO
+        JOIN FIDE_ESTADO_TB E ON I.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_INVENTARIO_TB_ACTUALIZAR_SP (
+    p_id_inventario IN NUMBER,
+    p_nuevo_producto IN VARCHAR2,
+    p_nueva_cantidad IN NUMBER,
+    p_nueva_fecha IN VARCHAR2,
+    p_nuevo_estado IN VARCHAR2
+)
+AS
+    v_id_producto NUMBER;
+    v_id_estado   NUMBER;
+BEGIN
+    v_id_producto := FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN(UPPER(p_nuevo_producto));
+    v_id_estado   := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_nuevo_estado));
+
+    UPDATE FIDE_INVENTARIO_TB
+    SET 
+        CANTIDAD = p_nueva_cantidad,
+        FECHA_ACTUALIZACION = TRUNC(TO_DATE(p_nueva_fecha, 'DD/MM/YYYY')),
+        ID_PRODUCTO = v_id_producto,
+        ID_ESTADO = v_id_estado
+    WHERE ID_INVENTARIO = p_id_inventario;
+
+    COMMIT;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_INVENTARIO_TB_INACTIVAR_SP (
+    p_id_inventario IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_INVENTARIO_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_INVENTARIO = p_id_inventario;
+
+    COMMIT;
+END;
+/
+
+
+
+CREATE OR REPLACE FUNCTION FIDE_PROVEEDOR_TB_OBTENER_ID_PROVEEDOR_FN(p_nombre VARCHAR2)
+RETURN NUMBER IS
+    v_id NUMBER;
+BEGIN
+    SELECT ID_PROVEEDOR INTO v_id FROM FIDE_PROVEEDOR_TB WHERE UPPER(NOMBRE) = UPPER(p_nombre);
+    RETURN v_id;
+EXCEPTION WHEN NO_DATA_FOUND THEN RETURN NULL; WHEN OTHERS THEN RETURN NULL;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_PROVEEDOR_TB_INSERTAR_SP (
+    p_nombre     IN VARCHAR2,
+    p_contacto   IN VARCHAR2,
+    p_tipo       IN VARCHAR2,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_proveedor NUMBER;
+    v_id_estado    NUMBER;
+BEGIN
+    SELECT ID_ESTADO INTO v_id_estado
+    FROM FIDE_ESTADO_TB
+    WHERE DESCRIPCION = UPPER(p_estado_desc);
+
+    SELECT FIDE_PROVEEDOR_TB_SEQ.NEXTVAL INTO v_id_proveedor FROM DUAL;
+
+    INSERT INTO FIDE_PROVEEDOR_TB (
+        ID_PROVEEDOR, NOMBRE, CONTACTO, TIPO, ID_ESTADO
+    ) VALUES (
+        v_id_proveedor, p_nombre, p_contacto, p_tipo, v_id_estado
+    );
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_PROVEEDOR_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            P.ID_PROVEEDOR,
+            P.NOMBRE,
+            P.CONTACTO,
+            P.TIPO,
+            E.DESCRIPCION AS ESTADO
+        FROM FIDE_PROVEEDOR_TB P
+        JOIN FIDE_ESTADO_TB E ON P.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_PROVEEDOR_TB_ACTUALIZAR_SP (
+    p_id_proveedor IN NUMBER,
+    p_nuevo_nombre IN VARCHAR2,
+    p_nuevo_contacto IN VARCHAR2,
+    p_nuevo_tipo IN VARCHAR2,
+    p_estado_desc IN VARCHAR2
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    SELECT ID_ESTADO INTO v_id_estado
+    FROM FIDE_ESTADO_TB
+    WHERE DESCRIPCION = UPPER(p_estado_desc);
+
+    UPDATE FIDE_PROVEEDOR_TB
+    SET 
+        NOMBRE = p_nuevo_nombre,
+        CONTACTO = p_nuevo_contacto,
+        TIPO = p_nuevo_tipo,
+        ID_ESTADO = v_id_estado
+    WHERE ID_PROVEEDOR = p_id_proveedor;
+
+    COMMIT;
+END;
+/
+
+
+CREATE OR REPLACE PROCEDURE FIDE_PROVEEDOR_TB_INACTIVAR_SP (
+    p_id_proveedor IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    SELECT ID_ESTADO INTO v_id_estado
+    FROM FIDE_ESTADO_TB
+    WHERE UPPER(DESCRIPCION) = 'INACTIVO';
+
+    UPDATE FIDE_PROVEEDOR_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_PROVEEDOR = p_id_proveedor;
+
+    COMMIT;
+END;
+/
+
+
+
+
+CREATE OR REPLACE PROCEDURE FIDE_ORDENES_COMPRA_TB_INSERTAR_SP (
+    p_nombre_proveedor IN VARCHAR2,
+    p_fecha_orden      IN VARCHAR2,
+    p_total            IN NUMBER,
+    p_estado_desc      IN VARCHAR2
+)
+AS
+    v_id_orden     NUMBER;
+    v_id_proveedor NUMBER;
+    v_id_estado    NUMBER;
+BEGIN
+    v_id_orden := FIDE_ORDENES_COMPRA_TB_SEQ.NEXTVAL;
+    v_id_proveedor := FIDE_PROVEEDOR_TB_OBTENER_ID_PROVEEDOR_FN(UPPER(p_nombre_proveedor));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    INSERT INTO FIDE_ORDENES_COMPRA_TB (
+        ID_ORDEN, ID_PROVEEDOR, FECHA_ORDEN, TOTAL, ID_ESTADO
+    ) VALUES (
+        v_id_orden, v_id_proveedor, TRUNC(TO_DATE(p_fecha_orden, 'DD/MM/YYYY')), p_total, v_id_estado
+    );
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_ORDENES_COMPRA_TB_LISTAR_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT 
+            OC.ID_ORDEN,
+            P.NOMBRE AS PROVEEDOR,
+            TO_CHAR(OC.FECHA_ORDEN, 'DD/MM/YYYY') AS FECHA,
+            OC.TOTAL,
+            E.DESCRIPCION AS ESTADO
+        FROM FIDE_ORDENES_COMPRA_TB OC
+        JOIN FIDE_PROVEEDOR_TB P ON OC.ID_PROVEEDOR = P.ID_PROVEEDOR
+        JOIN FIDE_ESTADO_TB E ON OC.ID_ESTADO = E.ID_ESTADO;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_ORDENES_COMPRA_TB_ACTUALIZAR_SP (
+    p_id_orden         IN NUMBER,
+    p_nombre_proveedor IN VARCHAR2,
+    p_fecha_orden      IN VARCHAR2,
+    p_total            IN NUMBER,
+    p_estado_desc      IN VARCHAR2
+)
+AS
+    v_id_proveedor NUMBER;
+    v_id_estado    NUMBER;
+BEGIN
+    v_id_proveedor := FIDE_PROVEEDOR_TB_OBTENER_ID_PROVEEDOR_FN(UPPER(p_nombre_proveedor));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
+
+    UPDATE FIDE_ORDENES_COMPRA_TB
+    SET 
+        ID_PROVEEDOR = v_id_proveedor,
+        FECHA_ORDEN = TRUNC(TO_DATE(p_fecha_orden, 'DD/MM/YYYY')),
+        TOTAL = p_total,
+        ID_ESTADO = v_id_estado
+    WHERE ID_ORDEN = p_id_orden;
+
+    COMMIT;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_ORDENES_COMPRA_TB_INACTIVAR_SP (
+    p_id_orden IN NUMBER
+)
+AS
+    v_id_estado NUMBER;
+BEGIN
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('INACTIVO');
+
+    UPDATE FIDE_ORDENES_COMPRA_TB
+    SET ID_ESTADO = v_id_estado
+    WHERE ID_ORDEN = p_id_orden;
+
+    COMMIT;
+END;
+/
+
+
+
+CREATE OR REPLACE PROCEDURE FIDE_PRODUCTO_TB_LISTAR_NOMBRES_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT NOMBRE_PRODUCTO
+        FROM FIDE_PRODUCTO_TB
+        WHERE ID_ESTADO = (
+            SELECT ID_ESTADO FROM FIDE_ESTADO_TB WHERE UPPER(DESCRIPCION) = 'ACTIVO'
+        );
+END;
+/
+
+
+--Facturacion
+CREATE OR REPLACE FUNCTION FIDE_METODO_PAGO_TB_OBTENER_ID_METODO_PAGO_FN(
+    p_nombre_metodo VARCHAR2
+) RETURN NUMBER IS
+    v_id NUMBER;
+BEGIN
+    SELECT ID_METODO_PAGO INTO v_id
+    FROM FIDE_METODO_PAGO_TB
+    WHERE UPPER(NOMBRE_METODO) = UPPER(p_nombre_metodo);
+    RETURN v_id;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN NULL;
+END;
+/
+
+CREATE OR REPLACE FUNCTION FIDE_PRODUCTO_TB_OBTENER_ID_PRODUCTO_FN(
+    p_nombre_producto VARCHAR2
+) RETURN NUMBER IS
+    v_id NUMBER;
+BEGIN
+    SELECT ID_PRODUCTO INTO v_id
+    FROM FIDE_PRODUCTO_TB
+    WHERE UPPER(NOMBRE_PRODUCTO) = UPPER(p_nombre_producto);
+    RETURN v_id;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN NULL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_DIRECCION_TB_LISTAR_DESCRIPCIONES_SP (
+    p_result OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_result FOR
+    SELECT 
+        PROV.PROVINCIA || ' - ' || CAN.CANTON || ' - ' || DIS.DISTRITO AS DESCRIPCION
+    FROM FIDE_DIRECCION_TB DIR
+    JOIN FIDE_PROVINCIA_TB PROV ON DIR.ID_PROVINCIA = PROV.ID_PROVINCIA
+    JOIN FIDE_CANTON_TB CAN ON DIR.ID_CANTON = CAN.ID_CANTON
+    JOIN FIDE_DISTRITO_TB DIS ON DIR.ID_DISTRITO = DIS.ID_DISTRITO
+    WHERE DIR.ID_ESTADO = (SELECT ID_ESTADO FROM FIDE_ESTADO_TB WHERE DESCRIPCION = 'ACTIVO');
+END;
+
+
+
+CREATE OR REPLACE PROCEDURE FIDE_PROVEEDOR_TB_LISTAR_NOMBRES_SP (
+    p_resultado OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT NOMBRE FROM FIDE_PROVEEDOR_TB
+        WHERE ID_ESTADO = (
+            SELECT ID_ESTADO FROM FIDE_ESTADO_TB WHERE UPPER(DESCRIPCION) = 'ACTIVO'
+        );
+END;
+/
 
 
 
@@ -1562,12 +2202,93 @@ END;
 
 
 
+--login
+CREATE OR REPLACE PROCEDURE FIDE_USUARIOS_TB_LOGIN_SP (
+    p_usuario     IN VARCHAR2,
+    p_clave       IN VARCHAR2,
+    p_id_usuario  OUT NUMBER,
+    p_rol         OUT VARCHAR2,
+    p_valido      OUT NUMBER
+)
+AS
+    v_id_usuario FIDE_USUARIOS_TB.ID_USUARIO%TYPE;
+    v_id_rol     FIDE_ROL_TB.NOMBRE_ROL%TYPE;
+BEGIN
+    SELECT U.ID_USUARIO, R.NOMBRE_ROL INTO v_id_usuario, v_id_rol
+    FROM FIDE_USUARIOS_TB U
+    JOIN FIDE_ROL_TB R ON U.ID_ROL = R.ID_ROL
+    WHERE UPPER(U.USUARIO) = UPPER(p_usuario)
+      AND U.CLAVE = p_clave
+      AND U.ID_ESTADO = FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN('ACTIVO');
+
+    p_id_usuario := v_id_usuario;
+    p_rol := v_id_rol;
+    p_valido := 1;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        p_valido := 0;
+        p_id_usuario := NULL;
+        p_rol := NULL;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE FIDE_LOGIN_VALIDAR_USUARIO_SP(
+    p_usuario IN VARCHAR2,
+    p_clave IN VARCHAR2,
+    p_id_usuario OUT NUMBER,
+    p_rol OUT VARCHAR2,
+    p_valido OUT NUMBER
+)
+IS
+    v_id_rol NUMBER;
+BEGIN
+    SELECT ID_USUARIO, ID_ROL INTO p_id_usuario, v_id_rol
+    FROM FIDE_USUARIOS_TB
+    WHERE USUARIO = UPPER(p_usuario)
+      AND CLAVE = p_clave
+      AND ID_ESTADO = (SELECT ID_ESTADO FROM FIDE_ESTADO_TB WHERE DESCRIPCION = 'ACTIVO');
+
+    -- Obtener nombre del rol
+    SELECT NOMBRE_ROL INTO p_rol
+    FROM FIDE_ROL_TB
+    WHERE ID_ROL = v_id_rol;
+
+    p_valido := 1;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        p_valido := 0;
+END;
+/
 
 
 
 
 
-select * from FIDE_direccion_TB;
+
+
+CREATE OR REPLACE FUNCTION FIDE_SERVICIOS_TB_OBTENER_ID_SERVICIO_FN (
+    p_nombre_servicio IN VARCHAR2
+) RETURN NUMBER IS
+    v_id NUMBER;
+BEGIN
+    SELECT ID_SERVICIO INTO v_id
+    FROM FIDE_SERVICIOS_TB
+    WHERE UPPER(NOMBRE_SERVICIO) = UPPER(TRIM(p_nombre_servicio));
+    RETURN v_id;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN NULL;
+END;
+/
+
+
+
+
+
+
+
+
+select * from FIDE_empleados_TB;
 
 ALTER SESSION SET CONTAINER = XEPDB1;
 SHOW CON_NAME;
