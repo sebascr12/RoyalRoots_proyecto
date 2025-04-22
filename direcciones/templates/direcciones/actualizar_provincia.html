@@ -1,20 +1,24 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Actualizar Provincia</h2>
-    <form method="post">
+    <h2 class="mb-4 text-warning">✏️ Actualizar Provincia</h2>
+
+    <form method="post" class="p-4 rounded shadow" style="background-color: #1f1f1f; color: #fff;">
         {% csrf_token %}
+        
         <div class="mb-3">
-            {{ form.nuevo_nombre.label_tag }}
+            <label for="{{ form.nuevo_nombre.id_for_label }}" class="form-label">Nuevo Nombre</label>
             {{ form.nuevo_nombre }}
         </div>
+
         <div class="mb-3">
-            {{ form.estado.label_tag }}
+            <label for="{{ form.estado.id_for_label }}" class="form-label">Estado</label>
             {{ form.estado }}
         </div>
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="{% url 'listar_provincias' %}" class="btn btn-secondary">Cancelar</a>
+
+        <button type="submit" class="btn btn-primary">💾 Actualizar</button>
+        <a href="{% url 'listar_provincias' %}" class="btn btn-secondary">↩️ Cancelar</a>
     </form>
 </div>
 {% endblock %}

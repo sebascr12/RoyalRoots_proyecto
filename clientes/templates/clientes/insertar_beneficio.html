@@ -1,12 +1,15 @@
-{% extends 'clientes/base_clientes.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Insertar Beneficio</h2>
-    <form method="post">
+    <h2 class="mb-4 text-warning">➕ Insertar Beneficio</h2>
+    <form method="post" class="card shadow p-4 bg-light">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <a href="{% url 'listar_beneficios' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a href="{% url 'listar_beneficios' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}

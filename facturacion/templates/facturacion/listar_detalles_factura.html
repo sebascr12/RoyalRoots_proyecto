@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="container mt-4">
-    <h2>Detalle de Facturas</h2>
-    <a href="{% url 'insertar_detalle_factura' %}" class="btn btn-primary mb-3">Agregar Detalle</a>
 
-    <table class="table table-striped">
-        <thead>
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-warning">🧾 Detalle de Facturas</h2>
+    
+    <a href="{% url 'insertar_detalle_factura' %}" class="btn btn-outline-success mb-3">➕ Agregar Detalle</a>
+
+    <table class="table table-dark table-striped table-bordered shadow">
+        <thead class="table-success text-dark">
             <tr>
                 <th>Factura</th>
                 <th>Producto</th>
@@ -22,14 +24,14 @@
                 <td>₡{{ detalle.subtotal }}</td>
                 <td>{{ detalle.estado }}</td>
                 <td>
-                    <a href="{% url 'actualizar_detalle_factura' detalle.id %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'inactivar_detalle_factura' detalle.id %}" class="btn btn-sm btn-danger"
+                    <a href="{% url 'actualizar_detalle_factura' detalle.id %}" class="btn btn-outline-warning btn-sm">Editar</a>
+                    <a href="{% url 'inactivar_detalle_factura' detalle.id %}" class="btn btn-outline-danger btn-sm"
                        onclick="return confirm('¿Deseas inactivar este detalle?');">Inactivar</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">No hay detalles registrados.</td>
+                <td colspan="5" class="text-center">No hay detalles registrados.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -1,15 +1,24 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Insertar Provincia</h2>
+    <h2 class="mb-4 text-warning">🌿 Insertar Provincia</h2>
 
-    <form method="post" class="card shadow p-4">
+    <form method="post" class="p-4 rounded shadow" style="background-color: #1f1f1f; color: #fff;">
         {% csrf_token %}
-        {{ form.as_p }}
 
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'listar_provincias' %}" class="btn btn-secondary">Volver</a>
+        <div class="mb-3">
+            <label for="provincia" class="form-label">Nombre de la Provincia</label>
+            {{ form.provincia }}
+        </div>
+
+        <div class="mb-3">
+            <label for="estado" class="form-label">Estado</label>
+            {{ form.estado }}
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 Guardar</button>
+        <a href="{% url 'listar_provincias' %}" class="btn btn-secondary">↩️ Volver</a>
     </form>
 </div>
 {% endblock %}

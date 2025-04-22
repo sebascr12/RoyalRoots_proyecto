@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Insertar Método de Pago</h2>
-    <form method="post">
+<div class="container mt-5">
+    <h2 class="mb-4 text-success">➕ Insertar Método de Pago</h2>
+    <form method="post" class="card shadow p-4 bg-dark text-white border-success">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'listar_metodos_pago' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-outline-success">Guardar</button>
+            <a href="{% url 'listar_metodos_pago' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}

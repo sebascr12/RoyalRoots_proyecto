@@ -1,33 +1,39 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Cantones</h2>
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Cantón</th>
-                <th>Provincia</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in cantones %}
-                <tr>
-                    <td>{{ c.canton }}</td>
-                    <td>{{ c.provincia }}</td>
-                    <td>{{ c.estado }}</td>
-                    <td>
-                        <a href="{% url 'actualizar_canton' c.canton %}" class="btn btn-sm btn-primary">Editar</a>
-                        <a href="{% url 'inactivar_canton' %}?nombre={{ c.canton }}" class="btn btn-sm btn-danger">Inactivar</a>
-                    </td>
+    <h2 class="mb-4 text-warning">🌆 Lista de Cantones</h2>
+
+    <div class="table-responsive rounded shadow">
+        <table class="table table-bordered table-hover align-middle text-white" style="background-color: #1f1f1f;">
+            <thead class="table-success text-black">
+                <tr class="text-center">
+                    <th>Cantón</th>
+                    <th>Provincia</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
-            {% empty %}
-                <tr><td colspan="4" class="text-center">No hay cantones registrados.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'insertar_canton' %}" class="btn btn-success">Agregar Cantón</a>
+            </thead>
+            <tbody>
+                {% for c in cantones %}
+                    <tr>
+                        <td>{{ c.canton }}</td>
+                        <td>{{ c.provincia }}</td>
+                        <td>{{ c.estado }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'actualizar_canton' c.canton %}" class="btn btn-sm btn-outline-warning me-2">Editar</a>
+                            <a href="{% url 'inactivar_canton' %}?nombre={{ c.canton }}" class="btn btn-sm btn-outline-danger">Inactivar</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">No hay cantones registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 text-end">
+        <a href="{% url 'insertar_canton' %}" class="btn btn-success">➕ Agregar Cantón</a>
+    </div>
 </div>
 {% endblock %}

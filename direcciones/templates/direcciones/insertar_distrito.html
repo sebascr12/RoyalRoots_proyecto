@@ -1,13 +1,15 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Insertar Distrito</h2>
-    <form method="post">
+    <h2 class="mb-4 text-success">➕ Insertar Distrito</h2>
+    <form method="post" class="card shadow p-4" style="background-color: #1f1f1f; color: white;">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'listar_distritos' %}" class="btn btn-secondary">Volver</a>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a href="{% url 'listar_distritos' %}" class="btn btn-secondary">Volver</a>
+        </div>
     </form>
 </div>
 {% endblock %}

@@ -1,32 +1,28 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Royal Roots - Inicio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="text-warning mb-4">Bienvenido a <span style="color: #00cc00;">Royal Roots</span></h1>
+    <p class="text-muted mb-5">Una experiencia de gestión profesional con estilo, cultura y raíces</p>
 
-<div class="container text-center">
-    <h1 class="mb-4">🏛️ Bienvenido a Royal Roots</h1>
-    <p class="lead">Selecciona un módulo para comenzar:</p>
-    <div class="d-grid gap-3 col-6 mx-auto mt-4">
-        <a href="{% url 'empleados_list' %}" class="btn btn-primary btn-lg">Módulo de Empleados</a>
-        <a href="{% url 'listar_provincias' %}" class="btn btn-warning btn-lg">Módulo de Direcciones</a>
-        <a href="{% url 'listar_servicios' %}" class="btn btn-success btn-lg">Módulo de Clientes</a>
-        <a href="{% url 'listar_productos' %}" class="btn btn-info btn-lg">Módulo de Productos</a>
-        <a href="{% url 'listar_inventario' %}" class="btn btn-dark btn-lg">Módulo de Inventario</a>
-        <a href="{% url 'listar_reservas' %}" class="btn btn-secondary btn-lg">Módulo de Reservas</a>
-        <a href="{% url 'listar_proveedores' %}" class="btn btn-dark btn-lg">Módulo de Proveedores</a>
-        <a href="{% url 'listar_ordenes' %}" class="btn btn-dark btn-lg">Módulo de Órdenes de Compra</a>
-        <a href="{% url 'listar_metodos_pago' %}" class="btn btn-outline-success btn-lg">Facturación: Métodos de Pago</a>
-        <a href="{% url 'listar_historial_pagos' %}" class="btn btn-outline-info btn-lg">Historial de Pagos</a>
-        <a href="{% url 'listar_facturas' %}" class="btn btn-outline-primary btn-lg">Facturas</a>
-        <a href="{% url 'listar_detalles_factura' %}" class="btn btn-outline-secondary btn-lg">Detalle de Facturas</a>
-
-
+    <div class="row gy-4">
+        <div class="col-md-4">
+            <a href="{% url 'empleados_list' %}" class="btn btn-lg btn-outline-light w-100">👥 Empleados</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'listar_clientes' %}" class="btn btn-lg btn-outline-light w-100">🧍 Clientes</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'listar_productos' %}" class="btn btn-lg btn-outline-light w-100">🧥 Productos</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'listar_inventario' %}" class="btn btn-lg btn-outline-light w-100">📦 Inventario</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'listar_reservas' %}" class="btn btn-lg btn-outline-light w-100">📅 Reservas</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'listar_facturas' %}" class="btn btn-lg btn-outline-light w-100">🧾 Facturación</a>
+        </div>
     </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

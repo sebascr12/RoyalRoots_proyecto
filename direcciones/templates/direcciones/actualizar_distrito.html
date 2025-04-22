@@ -1,13 +1,15 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Actualizar Distrito: {{ nombre_actual }}</h2>
-    <form method="post">
+    <h2 class="mb-4 text-warning">✏️ Actualizar Distrito: {{ nombre_actual }}</h2>
+    <form method="post" class="card shadow p-4" style="background-color: #1f1f1f; color: white;">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="{% url 'listar_distritos' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <a href="{% url 'listar_distritos' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}

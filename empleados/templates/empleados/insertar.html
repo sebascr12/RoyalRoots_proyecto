@@ -1,12 +1,24 @@
-{% extends 'empleados/base_empleados.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Editar Empleado</h2>
-    <form method="post" class="card p-4 shadow">
+<section class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="text-warning">Agregar Nuevo Empleado</h2>
+        <p class="text-light">Rellena los campos para registrar a un nuevo barbero o colaborador</p>
+    </div>
+
+    <form method="post" class="card bg-dark text-light p-4 shadow-lg border border-success">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="{% url 'empleados_list' %}" class="btn btn-secondary">Cancelar</a>
+
+        <div class="d-flex justify-content-between mt-3">
+            <button type="submit" class="btn btn-success">
+                💾 Guardar
+            </button>
+            <a href="{% url 'empleados_list' %}" class="btn btn-outline-light">
+                ❌ Cancelar
+            </a>
+        </div>
     </form>
-</div>
+</section>
 {% endblock %}

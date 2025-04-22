@@ -1,43 +1,52 @@
-{% extends 'empleados/base_empleados.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Lista de Empleados</h2>
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Salario</th>
-                <th>Turno</th>
-                <th>Función</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for emp in empleados %}
-            <tr>
-                <td>{{ emp.nombre }} {{ emp.apellido }}</td>
-                <td>{{ emp.correo }}</td>
-                <td>{{ emp.telefono }}</td>
-                <td>₡{{ emp.salario }}</td>
-                <td>{{ emp.hora_inicio }} - {{ emp.hora_fin }}</td>
-                <td>{{ emp.funcion }}</td>
-                <td>{{ emp.estado }}</td>
-                <td>
-                    <a href="{% url 'editar_empleado' emp.correo %}" class="btn btn-sm btn-primary">Editar</a>
-                    <a href="{% url 'inactivar_empleado' emp.correo|urlencode %}" class="btn btn-sm btn-danger">Inactivar</a>
-                    
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" class="text-center">No hay empleados registrados.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'agregar_empleado' %}" class="btn btn-success">Agregar nuevo empleado</a>
-</div>
+<section class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="text-warning">Empleados Registrados</h2>
+        <p class="text-light">Listado de todo el personal activo</p>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-dark table-hover text-center">
+            <thead class="table-success text-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Salario</th>
+                    <th>Turno</th>
+                    <th>Función</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in empleados %}
+                <tr>
+                    <td>{{ emp.nombre }} {{ emp.apellido }}</td>
+                    <td>{{ emp.correo }}</td>
+                    <td>{{ emp.telefono }}</td>
+                    <td>₡{{ emp.salario }}</td>
+                    <td>{{ emp.hora_inicio }} - {{ emp.hora_fin }}</td>
+                    <td>{{ emp.funcion }}</td>
+                    <td>{{ emp.estado }}</td>
+                    <td>
+                        <a href="{% url 'editar_empleado' emp.correo %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        <a href="{% url 'inactivar_empleado' emp.correo|urlencode %}" class="btn btn-sm btn-outline-danger">Inactivar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-light">No hay empleados registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-end mt-4">
+        <a href="{% url 'agregar_empleado' %}" class="btn btn-success">➕ Agregar nuevo empleado</a>
+    </div>
+</section>
 {% endblock %}

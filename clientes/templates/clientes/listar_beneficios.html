@@ -1,9 +1,10 @@
-{% extends 'clientes/base_clientes.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Beneficios</h2>
-    <table class="table table-striped">
-        <thead class="table-dark">
+    <h2 class="mb-4 text-warning">💎 Lista de Beneficios</h2>
+    <table class="table table-dark table-striped table-bordered shadow">
+        <thead class="table-success text-dark">
             <tr>
                 <th>Detalle</th>
                 <th>Servicio</th>
@@ -18,8 +19,8 @@
                 <td>{{ b.servicio }}</td>
                 <td>{{ b.estado }}</td>
                 <td>
-                    <a href="{% url 'actualizar_beneficio' b.detalle %}" class="btn btn-sm btn-primary">Editar</a>
-                    <a href="{% url 'inactivar_beneficio' b.detalle %}" class="btn btn-sm btn-danger">Inactivar</a>
+                    <a href="{% url 'actualizar_beneficio' b.detalle %}" class="btn btn-outline-primary btn-sm">Editar</a>
+                    <a href="{% url 'inactivar_beneficio' b.detalle %}" class="btn btn-outline-danger btn-sm">Inactivar</a>
                 </td>
             </tr>
             {% empty %}
@@ -27,6 +28,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'insertar_beneficio' %}" class="btn btn-success mt-3">Agregar Beneficio</a>
+    <a href="{% url 'insertar_beneficio' %}" class="btn btn-outline-success mt-3">➕ Agregar Beneficio</a>
 </div>
 {% endblock %}

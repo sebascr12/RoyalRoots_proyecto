@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Órdenes de Compra</h2>
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
+    <h2 class="mb-4 text-warning">📑 Lista de Órdenes de Compra</h2>
+    <table class="table table-dark table-striped table-hover shadow-sm">
+        <thead class="table-success text-dark">
             <tr>
                 <th>Proveedor</th>
                 <th>Fecha de Orden</th>
@@ -20,15 +20,17 @@
                 <td>₡{{ o.total }}</td>
                 <td>{{ o.estado }}</td>
                 <td>
-                    <a href="{% url 'actualizar_orden' o.id %}" class="btn btn-sm btn-primary">Editar</a>
-                    <a href="{% url 'inactivar_orden' o.id %}" class="btn btn-sm btn-danger">Inactivar</a>
+                    <a href="{% url 'actualizar_orden' o.id %}" class="btn btn-outline-primary btn-sm">Editar</a>
+                    <a href="{% url 'inactivar_orden' o.id %}" class="btn btn-outline-danger btn-sm">Inactivar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="text-center">No hay órdenes registradas.</td></tr>
+            <tr><td colspan="5" class="text-center text-light">No hay órdenes registradas.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'insertar_orden' %}" class="btn btn-success">Crear Nueva Orden</a>
+    <div class="text-end">
+        <a href="{% url 'insertar_orden' %}" class="btn btn-outline-success">➕ Crear Nueva Orden</a>
+    </div>
 </div>
 {% endblock %}

@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Métodos de Pago</h2>
-    <a href="{% url 'insertar_metodo_pago' %}" class="btn btn-primary mb-3">Agregar Método de Pago</a>
-    <table class="table table-striped">
-        <thead>
+<div class="container mt-5">
+    <h2 class="mb-4 text-warning">💳 Métodos de Pago</h2>
+    <a href="{% url 'insertar_metodo_pago' %}" class="btn btn-outline-success mb-3">➕ Agregar Método de Pago</a>
+
+    <table class="table table-dark table-striped table-bordered shadow">
+        <thead class="table-success text-dark">
             <tr>
                 <th>Nombre del Método</th>
                 <th>Estado</th>
@@ -17,14 +19,14 @@
                 <td>{{ metodo.nombre }}</td>
                 <td>{{ metodo.estado }}</td>
                 <td>
-                    <a href="{% url 'actualizar_metodo_pago' metodo.id %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'inactivar_metodo_pago' metodo.id %}" class="btn btn-sm btn-danger"
+                    <a href="{% url 'actualizar_metodo_pago' metodo.id %}" class="btn btn-outline-primary btn-sm">Editar</a>
+                    <a href="{% url 'inactivar_metodo_pago' metodo.id %}" class="btn btn-outline-danger btn-sm"
                         onclick="return confirm('¿Estás seguro de que deseas inactivar este método de pago?');">Inactivar</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3">No hay métodos de pago registrados.</td>
+                <td colspan="3" class="text-center text-muted">No hay métodos de pago registrados.</td>
             </tr>
             {% endfor %}
         </tbody>

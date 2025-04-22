@@ -1,10 +1,10 @@
-{% extends 'clientes/base_clientes.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Clientes</h2>
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
+    <h2 class="mb-4 text-warning">👤 Lista de Clientes</h2>
+    <table class="table table-dark table-hover border rounded shadow">
+        <thead class="bg-success text-white">
             <tr>
                 <th>Nombre</th>
                 <th>Teléfono</th>
@@ -22,19 +22,24 @@
                 <td>{{ cliente.telefono }}</td>
                 <td>{{ cliente.correo }}</td>
                 <td>{{ cliente.fecha_registro }}</td>
+                <td>{{ cliente.direccion }}</td>
                 <td>{{ cliente.estado }}</td>
                 <td>
                     {% if cliente.id_cliente %}
-                        <a href="{% url 'actualizar_cliente' cliente.id_cliente %}" class="btn btn-primary btn-sm">Editar</a>
-                        <a href="{% url 'inactivar_cliente' cliente.id_cliente %}" class="btn btn-danger btn-sm">Inactivar</a>
+                        <a href="{% url 'actualizar_cliente' cliente.id_cliente %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        <a href="{% url 'inactivar_cliente' cliente.id_cliente %}" class="btn btn-sm btn-outline-danger">Inactivar</a>
                     {% else %}
                         <span class="text-muted">ID no disponible</span>
                     {% endif %}
                 </td>
             </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">No hay clientes registrados.</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'insertar_cliente' %}" class="btn btn-success mt-3">Agregar Cliente</a>
+    <a href="{% url 'insertar_cliente' %}" class="btn btn-success mt-3">➕ Agregar Cliente</a>
 </div>
 {% endblock %}

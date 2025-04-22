@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Actualizar Detalle de Factura</h2>
-    <form method="post">
+<div class="container mt-5">
+    <h2 class="mb-4 text-warning">✏️ Actualizar Detalle de Factura</h2>
+
+    <form method="post" class="card shadow p-4 bg-dark text-light">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Actualizar</button>
-        <a href="{% url 'listar_detalles_factura' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-outline-success">Actualizar</button>
+        <a href="{% url 'listar_detalles_factura' %}" class="btn btn-outline-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

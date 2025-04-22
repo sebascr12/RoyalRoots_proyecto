@@ -1,23 +1,24 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Insertar Dirección</h2>
-    <form method="post" class="border p-4 rounded shadow">
+    <h2 class="mb-4 text-success">Insertar Dirección</h2>
+    <form method="post" class="border p-4 rounded shadow bg-dark text-white">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="provincia" class="form-label">Provincia</label>
+            <label class="form-label">Provincia</label>
             {{ form.provincia }}
         </div>
         <div class="mb-3">
-            <label for="canton" class="form-label">Cantón</label>
+            <label class="form-label">Cantón</label>
             {{ form.canton }}
         </div>
         <div class="mb-3">
-            <label for="distrito" class="form-label">Distrito</label>
+            <label class="form-label">Distrito</label>
             {{ form.distrito }}
         </div>
         <div class="mb-3">
-            <label for="estado" class="form-label">Estado</label>
+            <label class="form-label">Estado</label>
             {{ form.estado }}
         </div>
         <button type="submit" class="btn btn-success">Guardar</button>

@@ -1,13 +1,18 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Actualizar Cantón</h2>
-    <form method="post">
+    <h2 class="mb-4 text-warning">✏️ Actualizar Cantón</h2>
+
+    <form method="post" class="card shadow p-4" style="background-color: #1f1f1f;">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="{% url 'listar_cantones' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="mb-3 text-white">
+            {{ form.as_p }}
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-outline-warning me-2">Actualizar</button>
+            <a href="{% url 'listar_cantones' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}

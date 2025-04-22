@@ -1,9 +1,9 @@
-{% extends 'direcciones/base_direcciones.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Direcciones</h2>
-    <table class="table table-bordered table-striped">
+    <h2 class="mb-4 text-warning">Lista de Direcciones</h2>
+    <table class="table table-striped table-bordered">
         <thead class="table-dark">
             <tr>
                 <th>Provincia</th>
@@ -21,19 +21,17 @@
                 <td>{{ d.distrito }}</td>
                 <td>{{ d.estado }}</td>
                 <td>
-                    {% if d.id_direccion %}
-                        <a href="{% url 'actualizar_direccion' d.id_direccion %}" class="btn btn-sm btn-primary">Editar</a>
-                        <a href="{% url 'inactivar_direccion' d.id_direccion %}" class="btn btn-sm btn-danger">Inactivar</a>
-                    {% else %}
-                        <span class="text-muted">Sin ID</span>
-                    {% endif %}
+                    <a href="{% url 'actualizar_direccion' d.id_direccion %}" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="{% url 'inactivar_direccion' d.id_direccion %}" class="btn btn-sm btn-danger">Inactivar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="text-center">No hay direcciones registradas.</td></tr>
+            <tr>
+                <td colspan="5" class="text-center text-muted">No hay direcciones registradas.</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'insertar_direccion' %}" class="btn btn-success">Agregar Dirección</a>
+    <a href="{% url 'insertar_direccion' %}" class="btn btn-success mt-3">Agregar Dirección</a>
 </div>
 {% endblock %}

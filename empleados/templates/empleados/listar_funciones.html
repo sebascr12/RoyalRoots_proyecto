@@ -1,36 +1,42 @@
-{% extends 'empleados/base_empleados.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Lista de Funciones</h2>
-    <table class="table table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Función</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for f in funciones %}
-                <tr>
-                    <td>{{ f.nombre_funcion }}</td>
-                    <td>{{ f.descripcion }}</td>
-                    <td>{{ f.estado }}</td>
-                    <td>
-                        {% if f.nombre_funcion %}
-                            <a href="{% url 'actualizar_funcion' f.nombre_funcion %}" class="btn btn-sm btn-primary">Editar</a>
-                            <a href="{% url 'inactivar_funcion' f.nombre_funcion %}" class="btn btn-sm btn-danger">Inactivar</a>
-                        {% else %}
-                            <span class="text-muted">No disponible</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="4" class="text-center">No hay funciones registradas.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'insertar_funcion' %}" class="btn btn-success mt-3">Agregar Función</a>
-</div>
+<section class="container mt-5">
+  <div class="text-center mb-4">
+    <h2 class="text-warning">Lista de Funciones</h2>
+    <p class="text-light">Gestiona las funciones del personal de la barbería</p>
+  </div>
+
+  <table class="table table-dark table-bordered table-hover shadow">
+    <thead class="bg-success text-white">
+      <tr>
+        <th>Función</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in funciones %}
+      <tr>
+        <td>{{ f.nombre_funcion }}</td>
+        <td>{{ f.descripcion }}</td>
+        <td>{{ f.estado }}</td>
+        <td>
+          <a href="{% url 'actualizar_funcion' f.nombre_funcion %}" class="btn btn-sm btn-outline-warning">Editar</a>
+          <a href="{% url 'inactivar_funcion' f.nombre_funcion %}" class="btn btn-sm btn-outline-danger">Inactivar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center text-muted">No hay funciones registradas.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="text-center mt-4">
+    <a href="{% url 'insertar_funcion' %}" class="btn btn-success">➕ Agregar Función</a>
+  </div>
+</section>
 {% endblock %}

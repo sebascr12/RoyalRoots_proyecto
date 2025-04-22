@@ -1,0 +1,72 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #212121; border-bottom: 3px solid #cd212a;">
+    <div class="container-fluid">
+      <a class="navbar-brand text-highlight" href="{% url 'home' %}">🏛️ Royal Roots</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  
+          <!-- Empleados -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Empleados</a>
+            <ul class="dropdown-menu bg-dark">
+              <li><a class="dropdown-item text-white" href="{% url 'empleados_list' %}">Listado</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_funciones' %}">Funciones</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_turnos' %}">Turnos</a></li>
+            </ul>
+          </li>
+  
+          <!-- Direcciones -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Direcciones</a>
+            <ul class="dropdown-menu bg-dark">
+              <li><a class="dropdown-item text-white" href="{% url 'listar_provincias' %}">Provincias</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_cantones' %}">Cantones</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_distritos' %}">Distritos</a></li>
+            </ul>
+          </li>
+  
+          <!-- Clientes -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Clientes</a>
+            <ul class="dropdown-menu bg-dark">
+              <li><a class="dropdown-item text-white" href="{% url 'listar_clientes' %}">Clientes</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_beneficios' %}">Beneficios</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_servicios' %}">Servicios</a></li>
+            </ul>
+          </li>
+  
+          <!-- Facturas -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Facturación</a>
+            <ul class="dropdown-menu bg-dark">
+              <li><a class="dropdown-item text-white" href="{% url 'listar_facturas' %}">Facturas</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_detalles_factura' %}">Detalle Factura</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_historial_pagos' %}">Historial Pago</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_metodos_pago' %}">Métodos Pago</a></li>
+            </ul>
+          </li>
+  
+          <!-- Productos -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Productos</a>
+            <ul class="dropdown-menu bg-dark">
+              <li><a class="dropdown-item text-white" href="{% url 'listar_productos' %}">Productos</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_inventario' %}">Inventario</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_ordenes' %}">Órdenes de Compra</a></li>
+              <li><a class="dropdown-item text-white" href="{% url 'listar_proveedores' %}">Proveedores</a></li>
+            </ul>
+          </li>
+  
+          <!-- Reservas -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'listar_reservas' %}">Reservas</a>
+          </li>
+  
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
