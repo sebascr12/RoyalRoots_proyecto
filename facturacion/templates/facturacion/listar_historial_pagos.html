@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Historial de Pagos</h2>
+    <a href="{% url 'insertar_historial_pago' %}" class="btn btn-primary mb-3">Registrar Nuevo Pago</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Fecha de Pago</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.cliente }}</td>
+                <td>₡{{ pago.monto }}</td>
+                <td>{{ pago.fecha }}</td>
+                <td>{{ pago.estado }}</td>
+                <td>
+                    <a href="{% url 'actualizar_historial_pago' pago.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'inactivar_historial_pago' pago.id %}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('¿Deseas inactivar este pago?');">Inactivar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No hay pagos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
