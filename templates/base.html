@@ -27,19 +27,35 @@
                     <a class="nav-link" href="{% url 'listar_beneficios' %}">Beneficios</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'listar_clientes' %}">Clientes</a> <!-- ✅ NUEVO ENLACE -->
+                    <a class="nav-link" href="{% url 'listar_clientes' %}">Clientes</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'listar_productos' %}">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'listar_inventario' %}">Inventario</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'listar_reservas' %}">Reservas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'listar_proveedores' %}">Proveedores</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'listar_ordenes' %}">Órdenes de Compra</a>
+                </li>
+                
             </ul>
         </div>
     </div>
 </nav>
 
 {% if messages %}
-    <div class="container mt-3">
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
+<div class="container mt-3">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
 {% endif %}
 
 {% block content %}{% endblock %}

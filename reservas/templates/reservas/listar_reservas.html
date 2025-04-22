@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Listado de Reservas</h2>
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Cliente</th>
+                <th>Empleado</th>
+                <th>Servicio</th>
+                <th>Fecha y Hora</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td>{{ r.cliente }}</td>
+                <td>{{ r.empleado }}</td>
+                <td>{{ r.servicio }}</td>
+                <td>{{ r.fecha_hora }}</td>
+                <td>{{ r.estado }}</td>
+                <td>
+                    <a href="{% url 'actualizar_reserva' r.id_reserva %}" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="{% url 'inactivar_reserva' r.id_reserva %}" class="btn btn-sm btn-danger">Inactivar</a>
+
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center">No hay reservas registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'insertar_reserva' %}" class="btn btn-success">Crear Nueva Reserva</a>
+</div>
+{% endblock %}

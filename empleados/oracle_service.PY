@@ -52,40 +52,48 @@ def insertar_empleado(nombre, apellido, correo, telefono, fecha, salario, funcio
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Fecha de contratación como datetime (sin hora)
+        # Asegurar tipo DATE para fecha
         if isinstance(fecha, str):
             fecha = datetime.strptime(fecha, "%Y-%m-%d")
         elif isinstance(fecha, date) and not isinstance(fecha, datetime):
             fecha = datetime.combine(fecha, time(0, 0))
 
-        # Turno inicio y fin como datetime completo (TIMESTAMP)
+        # Asegurar tipo TIMESTAMP para hora inicio y fin
         if isinstance(turno_inicio, str):
             turno_inicio = datetime.combine(date.today(), datetime.strptime(turno_inicio, "%H:%M").time())
         if isinstance(turno_fin, str):
             turno_fin = datetime.combine(date.today(), datetime.strptime(turno_fin, "%H:%M").time())
 
-        cur.callproc("FIDE_EMPLEADOS_TB_INSERTAR_EMPLEADO_SP", [
-            nombre,
-            apellido,
-            correo,
+        # Asegurar que el salario sea float (no Decimal)
+        salario = float(salario)
+
+        datos = [
+            nombre.upper(),
+            apellido.upper(),
+            correo.upper(),
             telefono,
             fecha,
             salario,
-            funcion,
+            funcion.upper(),
             turno_inicio,
             turno_fin,
-            estado
-        ])
+            estado.upper()
+        ]
+
+        print("🔁 DATOS ENVIADOS A ORACLE:")
+        for i, d in enumerate(datos):
+            print(f"  {i + 1}. {d} ({type(d)})")
+
+        cur.callproc("FIDE_EMPLEADOS_TB_INSERTAR_EMPLEADO_SP", datos)
         conn.commit()
         return True
+
     except Exception as e:
         print("Error al insertar empleado:", e)
         return False
     finally:
         cur.close()
         conn.close()
-
-
 
 def listar_empleados():
     conn = get_connection()
@@ -98,9 +106,16 @@ def listar_empleados():
         for row in empleados_cursor:
             empleados.append({
                 'id': row[0],
-                'nombre_completo': row[1],
-                'funcion': row[2],
-                'estado': row[3]
+                'nombre': row[1],
+                'apellido': row[2],
+                'correo': row[3],  
+                'telefono': row[4],
+                'fecha': row[5],
+                'salario': row[6],
+                'hora_inicio': row[7],
+                'hora_fin': row[8],
+                'funcion': row[9],
+                'estado': row[10]
             })
         return empleados
     except Exception as e:
@@ -157,76 +172,6 @@ def actualizar_empleado(nombre, apellido, correo, telefono, fecha, salario, func
         conn.close()
 
 
-# Listar empleados
-def listar_empleados():
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        resultado = cur.var(cx_Oracle.CURSOR)
-        cur.callproc("FIDE_EMPLEADOS_TB_LISTAR_EMPLEADOS_SP", [resultado])
-        empleados_cursor = resultado.getvalue()
-        empleados = []
-        for row in empleados_cursor:
-            empleados.append({
-                'id': row[0],
-                'nombre': row[1],
-                'apellido': row[2],
-                'funcion': row[3],
-                'estado': row[4],
-                'correo': row[5],
-                'telefono': row[6],
-                'fecha_contratacion': row[7],
-                'salario': row[8],
-                'hora_inicio': row[9],
-                'hora_fin': row[10]
-            })
-        return empleados
-    except Exception as e:
-        print("Error al listar empleados:", e)
-        return []
-    finally:
-        cur.close()
-        conn.close()
-
-# Inactivar empleado
-def inactivar_empleado(correo):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        cur.callproc("FIDE_EMPLEADOS_TB_ELIMINAR_EMPLEADO_SP", [correo])
-        conn.commit()
-        return True
-    except Exception as e:
-        print("Error al inactivar empleado:", e)
-        return False
-    finally:
-        cur.close()
-        conn.close()
-
-# Actualizar empleado
-def actualizar_empleado(nombre, apellido, correo, telefono, fecha, salario, funcion, turno_inicio, turno_fin, estado):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        fecha_formateada = fecha if isinstance(fecha, datetime) else datetime.strptime(fecha, "%Y-%m-%d")
-
-        dummy_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-        inicio = datetime.combine(dummy_date.date(), datetime.strptime(turno_inicio, "%H:%M").time())
-        fin = datetime.combine(dummy_date.date(), datetime.strptime(turno_fin, "%H:%M").time())
-
-        cur.callproc("FIDE_EMPLEADOS_TB_ACTUALIZAR_EMPLEADO_SP", [
-            nombre, apellido, correo, telefono,
-            fecha_formateada, salario,
-            funcion, inicio, fin, estado
-        ])
-        conn.commit()
-        return True
-    except Exception as e:
-        print("Error al actualizar empleado:", e)
-        return False
-    finally:
-        cur.close()
-        conn.close()
 
 #turnos
 

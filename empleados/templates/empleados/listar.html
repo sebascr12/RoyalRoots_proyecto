@@ -27,7 +27,8 @@
                 <td>{{ emp.estado }}</td>
                 <td>
                     <a href="{% url 'editar_empleado' emp.correo %}" class="btn btn-sm btn-primary">Editar</a>
-                    <a href="{% url 'inactivar_empleado' emp.correo %}" class="btn btn-sm btn-danger">Inactivar</a>
+                    <a href="{% url 'inactivar_empleado' emp.correo|urlencode %}" class="btn btn-sm btn-danger">Inactivar</a>
+                    
                 </td>
             </tr>
             {% empty %}

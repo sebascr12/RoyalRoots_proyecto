@@ -18,6 +18,9 @@ INSTALLED_APPS = [
     'empleados',
     'direcciones',
     'clientes',
+    'producto',
+    'usuarios',
+    'reservas',
 
 ]
 
@@ -64,3 +67,4 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
