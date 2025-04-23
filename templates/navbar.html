@@ -1,72 +1,108 @@
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #212121; border-bottom: 3px solid #cd212a;">
-    <div class="container-fluid">
-      <a class="navbar-brand text-highlight" href="{% url 'home' %}">🏛️ Royal Roots</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-  
-      <div class="collapse navbar-collapse" id="mainNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-  
-          <!-- Empleados -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Empleados</a>
-            <ul class="dropdown-menu bg-dark">
-              <li><a class="dropdown-item text-white" href="{% url 'empleados_list' %}">Listado</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_funciones' %}">Funciones</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_turnos' %}">Turnos</a></li>
-            </ul>
-          </li>
-  
-          <!-- Direcciones -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Direcciones</a>
-            <ul class="dropdown-menu bg-dark">
-              <li><a class="dropdown-item text-white" href="{% url 'listar_provincias' %}">Provincias</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_cantones' %}">Cantones</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_distritos' %}">Distritos</a></li>
-            </ul>
-          </li>
-  
-          <!-- Clientes -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Clientes</a>
-            <ul class="dropdown-menu bg-dark">
-              <li><a class="dropdown-item text-white" href="{% url 'listar_clientes' %}">Clientes</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_beneficios' %}">Beneficios</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_servicios' %}">Servicios</a></li>
-            </ul>
-          </li>
-  
-          <!-- Facturas -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Facturación</a>
-            <ul class="dropdown-menu bg-dark">
-              <li><a class="dropdown-item text-white" href="{% url 'listar_facturas' %}">Facturas</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_detalles_factura' %}">Detalle Factura</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_historial_pagos' %}">Historial Pago</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_metodos_pago' %}">Métodos Pago</a></li>
-            </ul>
-          </li>
-  
-          <!-- Productos -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Productos</a>
-            <ul class="dropdown-menu bg-dark">
-              <li><a class="dropdown-item text-white" href="{% url 'listar_productos' %}">Productos</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_inventario' %}">Inventario</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_ordenes' %}">Órdenes de Compra</a></li>
-              <li><a class="dropdown-item text-white" href="{% url 'listar_proveedores' %}">Proveedores</a></li>
-            </ul>
-          </li>
-  
-          <!-- Reservas -->
+  <div class="container-fluid">
+    <a class="navbar-brand text-highlight" href="{% url 'home' %}">🏛️ Royal Roots</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        {# ---- EMPLEADOS (solo admin) ---- #}
+        {% if request.session.rol == 'ADMIN' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Empleados</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'empleados_list' %}">Listado</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_funciones' %}">Funciones</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_turnos' %}">Turnos</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {# ---- DIRECCIONES (admin y empleado) ---- #}
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Direcciones</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'listar_provincias' %}">Provincias</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_cantones' %}">Cantones</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_distritos' %}">Distritos</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {# ---- CLIENTES ---- #}
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Clientes</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'listar_clientes' %}">Clientes</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_beneficios' %}">Beneficios</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_servicios' %}">Servicios</a></li>
+          </ul>
+        </li>
+        {% elif request.session.rol == 'CLIENTE' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Servicios</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'listar_servicios' %}">Ver Servicios</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {# ---- FACTURAS ---- #}
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Facturación</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'listar_facturas' %}">Facturas</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_detalles_factura' %}">Detalle Factura</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_historial_pagos' %}">Historial Pago</a></li>
+            {% if request.session.rol == 'ADMIN' %}
+            <li><a class="dropdown-item text-white" href="{% url 'listar_metodos_pago' %}">Métodos Pago</a></li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        {# ---- PRODUCTOS (admin y empleado) ---- #}
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Productos</a>
+          <ul class="dropdown-menu bg-dark">
+            <li><a class="dropdown-item text-white" href="{% url 'listar_productos' %}">Productos</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_inventario' %}">Inventario</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_ordenes' %}">Órdenes de Compra</a></li>
+            <li><a class="dropdown-item text-white" href="{% url 'listar_proveedores' %}">Proveedores</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {# ---- RESERVAS (todos) ---- #}
+        {% if request.session.rol %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'listar_reservas' %}">Reservas</a>
+        </li>
+        {% endif %}
+
+      </ul>
+
+      <!-- login/logout -->
+      <ul class="navbar-nav">
+        {% if request.session.usuario %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'listar_reservas' %}">Reservas</a>
+            <span class="nav-link text-warning">👤 {{ request.session.usuario }} ({{ request.session.rol }})</span>
           </li>
-  
-        </ul>
-      </div>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="{% url 'logout' %}">Cerrar sesión</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link text-success" href="{% url 'login' %}">Iniciar sesión</a>
+          </li>
+        {% endif %}
+      </ul>
     </div>
-  </nav>
-  
+  </div>
+</nav>

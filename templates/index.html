@@ -5,24 +5,44 @@
     <p class="text-muted mb-5">Una experiencia de gestión profesional con estilo, cultura y raíces</p>
 
     <div class="row gy-4">
+        {% if request.session.rol == 'ADMIN' %}
         <div class="col-md-4">
             <a href="{% url 'empleados_list' %}" class="btn btn-lg btn-outline-light w-100">👥 Empleados</a>
         </div>
+        {% endif %}
+
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
         <div class="col-md-4">
             <a href="{% url 'listar_clientes' %}" class="btn btn-lg btn-outline-light w-100">🧍 Clientes</a>
         </div>
+        {% endif %}
+
+        {% if request.session.rol == 'CLIENTE' %}
+        <div class="col-md-4">
+            <a href="{% url 'listar_servicios' %}" class="btn btn-lg btn-outline-light w-100">💈 Servicios</a>
+        </div>
+        {% endif %}
+
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
         <div class="col-md-4">
             <a href="{% url 'listar_productos' %}" class="btn btn-lg btn-outline-light w-100">🧥 Productos</a>
         </div>
         <div class="col-md-4">
             <a href="{% url 'listar_inventario' %}" class="btn btn-lg btn-outline-light w-100">📦 Inventario</a>
         </div>
+        {% endif %}
+
+        {% if request.session.rol %}
         <div class="col-md-4">
             <a href="{% url 'listar_reservas' %}" class="btn btn-lg btn-outline-light w-100">📅 Reservas</a>
         </div>
+        {% endif %}
+
+        {% if request.session.rol in 'ADMIN EMPLEADO' %}
         <div class="col-md-4">
             <a href="{% url 'listar_facturas' %}" class="btn btn-lg btn-outline-light w-100">🧾 Facturación</a>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

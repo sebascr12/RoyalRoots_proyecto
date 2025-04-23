@@ -1,31 +1,6 @@
-from royalroots.init_oracle import get_connection
+# usuarios/oracle_service.py
 import cx_Oracle
-
-def autenticar_usuario(usuario, clave):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        resultado = cur.var(cx_Oracle.NUMBER)
-        id_rol = cur.var(cx_Oracle.STRING)
-        valido = cur.var(cx_Oracle.NUMBER)
-
-        cur.callproc("FIDE_USUARIOS_TB_LOGIN_SP", [
-            usuario.upper(), clave, resultado, id_rol, valido
-        ])
-
-        if valido.getvalue() == 1:
-            return {
-                'id_usuario': resultado.getvalue(),
-                'rol': id_rol.getvalue()
-            }
-        return None
-    except Exception as e:
-        print("Error al autenticar usuario:", e)
-        return None
-    finally:
-        cur.close()
-        conn.close()
-
+from royalroots.init_oracle import get_connection
 
 def validar_usuario_login(usuario, clave):
     conn = get_connection()
@@ -38,8 +13,9 @@ def validar_usuario_login(usuario, clave):
         cur.callproc("FIDE_LOGIN_VALIDAR_USUARIO_SP", [
             usuario.upper(), clave, id_usuario, rol, valido
         ])
+
         return {
-            'id_usuario': int(id_usuario.getvalue()) if id_usuario.getvalue() else None,
+            'id_usuario': id_usuario.getvalue(),
             'rol': rol.getvalue(),
             'valido': valido.getvalue() == 1
         }

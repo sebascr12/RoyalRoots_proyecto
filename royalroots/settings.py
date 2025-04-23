@@ -19,9 +19,9 @@ INSTALLED_APPS = [
     'direcciones',
     'clientes',
     'producto',
-    'usuarios',
     'reservas',
     'facturacion',
+    'usuarios',
 
 ]
 
@@ -40,19 +40,23 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [BASE_DIR / 'templates'], 
-    'APP_DIRS': True,
-    'OPTIONS': {
-        'context_processors': [
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
-        ],
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'usuarios.context_processors.rol_usuario_context', 
+            ],
+        },
     },
-}]
+]
+
 WSGI_APPLICATION = 'royalroots.wsgi.application'
 
 DATABASES = {'default': {
@@ -69,5 +73,4 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
-
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth import logout as django_logout
 from .forms import LoginForm
 from .oracle_service import validar_usuario_login
 
@@ -13,12 +13,13 @@ def login_view(request):
             request.session['usuario'] = data['usuario']
             request.session['id_usuario'] = resultado['id_usuario']
             request.session['rol'] = resultado['rol']
-            messages.success(request, f"Bienvenido {data['usuario']} - Rol: {resultado['rol']}")
+            messages.success(request, f"Bienvenido {data['usuario']}")
             return redirect('home')
         else:
-            messages.error(request, "Credenciales inválidas o usuario inactivo.")
+            messages.error(request, "Credenciales incorrectas o usuario inactivo.")
     return render(request, 'login.html', {'form': form})
 
 def logout_view(request):
-    auth_logout(request)
+    django_logout(request)
+    request.session.flush()
     return redirect('login')
