@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'reservas',
     'facturacion',
     'usuarios',
+    'reportes',
 
 ]
 

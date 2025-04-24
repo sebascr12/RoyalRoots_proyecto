@@ -87,6 +87,13 @@
         </li>
         {% endif %}
 
+        {% if request.session.rol == 'ADMIN' %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'reportes' %}">📊 Reportes</a>
+        </li>
+        {% endif %}
+
+
       </ul>
 
       <!-- login/logout -->
