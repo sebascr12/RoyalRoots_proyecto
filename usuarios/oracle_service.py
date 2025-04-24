@@ -1,4 +1,3 @@
-# usuarios/oracle_service.py
 import cx_Oracle
 from royalroots.init_oracle import get_connection
 

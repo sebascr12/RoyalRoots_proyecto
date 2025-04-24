@@ -593,11 +593,10 @@ AS
     v_id_estado NUMBER;
     v_id_reserva NUMBER;
 BEGIN
-    -- Buscar IDs desde valores visibles
-    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(p_cliente_nombre);
-    v_id_empleado := FIDE_EMPLEADOS_TB_OBTENER_ID_EMPLEADO_FN(p_empleado_correo);
-    v_id_servicio := FIDE_SERVICIOS_TB_OBTENER_ID_SERVICIO_FN(p_servicio_nombre);
-    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(p_estado_desc);
+    v_id_cliente := FIDE_CLIENTES_TB_OBTENER_ID_CLIENTE_FN(UPPER(TRIM(p_cliente_nombre)));
+    v_id_empleado := FIDE_EMPLEADOS_TB_OBTENER_ID_EMPLEADO_FN(UPPER(TRIM(p_empleado_correo)));
+    v_id_servicio := FIDE_SERVICIOS_TB_OBTENER_ID_SERVICIO_FN(UPPER(TRIM(p_servicio_nombre)));
+    v_id_estado := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(TRIM(p_estado_desc)));
     v_id_reserva := FIDE_RESERVAS_TB_SEQ.NEXTVAL;
 
     INSERT INTO FIDE_RESERVAS_TB (
@@ -2602,10 +2601,6 @@ EXCEPTION
     WHEN NO_DATA_FOUND THEN RETURN NULL;
 END;
 /
-
-
-
-
 
 
 

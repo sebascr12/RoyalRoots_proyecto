@@ -228,7 +228,7 @@ def listar_clientes():
                 'telefono': row[2],
                 'correo': row[3],
                 'fecha_registro': row[4],
-                'direccion_id': row[5],
+                'direccion': row[5],
                 'estado': row[6]
             })
         return clientes
