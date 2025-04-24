@@ -79,18 +79,18 @@ AS
     v_turno_id     NUMBER;
     v_empleado_id  NUMBER;
 BEGIN
-    -- Obtener ID de la función
-    SELECT ID_FUNCION INTO v_funcion_id
+    -- Obtener ID de la función (primer coincidencia segura)
+    SELECT MIN(ID_FUNCION) INTO v_funcion_id
     FROM FIDE_EMPLEADOS_FUNCION_TB
     WHERE UPPER(NOMBRE_FUNCION) = UPPER(p_funcion_nombre);
 
-    -- Obtener ID del estado
-    SELECT ID_ESTADO INTO v_estado_id
+    -- Obtener ID del estado (primer coincidencia segura)
+    SELECT MIN(ID_ESTADO) INTO v_estado_id
     FROM FIDE_ESTADO_TB
     WHERE UPPER(DESCRIPCION) = UPPER(p_estado_nombre);
 
-    -- Obtener ID del turno con comparación robusta de hora
-    SELECT ID_TURNO INTO v_turno_id
+    -- Obtener ID del turno (primer coincidencia segura)
+    SELECT MIN(ID_TURNO) INTO v_turno_id
     FROM FIDE_TURNOS_TB
     WHERE 
         TO_CHAR(HORA_INICIO, 'HH24:MI') = TO_CHAR(p_hora_inicio, 'HH24:MI')
@@ -111,8 +111,13 @@ BEGIN
     );
 
     COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE(' Error al insertar empleado: ' || SQLERRM);
+        ROLLBACK;
 END;
 /
+
 
 
 CREATE OR REPLACE PROCEDURE FIDE_EMPLEADOS_TB_ACTUALIZAR_EMPLEADO_SP (
@@ -828,21 +833,18 @@ END;
 
 --obtiene el id de provincia
 CREATE OR REPLACE FUNCTION FIDE_PROVINCIA_TB_OBTENER_ID_PROVINCIA_FN (
-    p_nombre_provincia VARCHAR2
-) RETURN NUMBER IS
-    v_id_provincia NUMBER;
+    p_nombre_provincia IN VARCHAR2
+) RETURN NUMBER
+IS
+    v_id NUMBER;
 BEGIN
-    SELECT ID_PROVINCIA INTO v_id_provincia
+    SELECT MIN(ID_PROVINCIA) INTO v_id
     FROM FIDE_PROVINCIA_TB
     WHERE UPPER(PROVINCIA) = UPPER(p_nombre_provincia);
 
-    RETURN v_id_provincia;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RETURN NULL;
+    RETURN v_id;
 END;
 /
-
 
 
 --canton
@@ -936,16 +938,18 @@ END;
 
 --distritos
 CREATE OR REPLACE FUNCTION FIDE_CANTON_TB_OBTENER_ID_CANTON_FN (
-    p_nombre_canton VARCHAR2
-) RETURN NUMBER IS
-    v_id_canton NUMBER;
+    p_nombre_canton IN VARCHAR2
+) RETURN NUMBER
+IS
+    v_id NUMBER;
 BEGIN
-    SELECT ID_CANTON INTO v_id_canton
+    SELECT MIN(ID_CANTON) INTO v_id
     FROM FIDE_CANTON_TB
-    WHERE UPPER(CANTON) = UPPER(p_nombre_canton);
+    WHERE UPPER(CANTON) = UPPER(p_nombre_canton); -- Asegúrate de que el campo se llame así
 
-    RETURN v_id_canton;
+    RETURN v_id;
 END;
+/
 
 CREATE OR REPLACE PROCEDURE FIDE_DISTRITO_TB_INSERTAR_SP (
     p_nombre_distrito IN VARCHAR2,
@@ -1038,17 +1042,18 @@ END;
 --fide_direccion
 
 CREATE OR REPLACE FUNCTION FIDE_DISTRITO_TB_OBTENER_ID_DISTRITO_FN (
-    p_nombre_distrito VARCHAR2
-) RETURN NUMBER IS
-    v_id_distrito NUMBER;
+    p_nombre_distrito IN VARCHAR2
+) RETURN NUMBER
+IS
+    v_id NUMBER;
 BEGIN
-    SELECT ID_DISTRITO INTO v_id_distrito
+    SELECT MIN(ID_DISTRITO) INTO v_id
     FROM FIDE_DISTRITO_TB
     WHERE UPPER(DISTRITO) = UPPER(p_nombre_distrito);
 
-    RETURN v_id_distrito;
+    RETURN v_id;
 END;
-
+/
 
 
 --funciones para listar opciones activas
@@ -1421,27 +1426,28 @@ IS
     v_id_distrito  NUMBER;
     v_id_direccion NUMBER;
 BEGIN
-    -- Separar la descripción
-    v_provincia := REGEXP_SUBSTR(p_descripcion, '^[^-]+');
-    v_canton    := REGEXP_SUBSTR(p_descripcion, '[^-]+', 1, 2);
-    v_distrito  := REGEXP_SUBSTR(p_descripcion, '[^-]+', 1, 3);
+    -- Separar usando el formato con espacios
+    v_provincia := UPPER(TRIM(REGEXP_SUBSTR(p_descripcion, '^[^-]+')));
+    v_canton    := UPPER(TRIM(REGEXP_SUBSTR(p_descripcion, '[^\\-]+', 1, 2)));
+    v_distrito  := UPPER(TRIM(REGEXP_SUBSTR(p_descripcion, '[^\\-]+', 1, 3)));
 
-    -- Convertir a mayúsculas
-    v_provincia := UPPER(TRIM(v_provincia));
-    v_canton    := UPPER(TRIM(v_canton));
-    v_distrito  := UPPER(TRIM(v_distrito));
+    -- Eliminar espacios extra
+    v_provincia := TRIM(v_provincia);
+    v_canton    := TRIM(v_canton);
+    v_distrito  := TRIM(v_distrito);
 
-    -- Obtener IDs desde funciones existentes
+    -- Obtener IDs desde funciones auxiliares
     v_id_provincia := FIDE_PROVINCIA_TB_OBTENER_ID_PROVINCIA_FN(v_provincia);
     v_id_canton    := FIDE_CANTON_TB_OBTENER_ID_CANTON_FN(v_canton);
     v_id_distrito  := FIDE_DISTRITO_TB_OBTENER_ID_DISTRITO_FN(v_distrito);
 
-    -- Buscar dirección exacta
+    -- Buscar ID de dirección
     SELECT ID_DIRECCION INTO v_id_direccion
     FROM FIDE_DIRECCION_TB
     WHERE ID_PROVINCIA = v_id_provincia
       AND ID_CANTON = v_id_canton
-      AND ID_DISTRITO = v_id_distrito;
+      AND ID_DISTRITO = v_id_distrito
+      AND ID_ESTADO = 1; -- Opcional: solo direcciones activas
 
     RETURN v_id_direccion;
 
@@ -1470,7 +1476,7 @@ BEGIN
     v_id_direccion := FIDE_DIRECCION_TB_OBTENER_ID_DIRECCION_FN(UPPER(p_direccion_desc));
     v_id_estado    := FIDE_ESTADO_TB_OBTENER_ID_ESTADO_FN(UPPER(p_estado_desc));
 
-    -- Validación para evitar errores por valores NULL
+    -- Validaciones
     IF v_id_direccion IS NULL THEN
         RAISE_APPLICATION_ERROR(-20001, 'ERROR: Dirección no válida: ' || p_direccion_desc);
     END IF;
@@ -1482,42 +1488,40 @@ BEGIN
     -- Obtener ID automático
     SELECT FIDE_CLIENTES_TB_SEQ.NEXTVAL INTO v_id_cliente FROM DUAL;
 
+    -- Inserción (SIN campos de auditoría si los llena el trigger)
     INSERT INTO FIDE_CLIENTES_TB (
         ID_CLIENTE, NOMBRE_CLIENTE, TELEFONO_CLIENTE, CORREO_CLIENTE,
-        FECHA_REGISTRO, ID_DIRECCION, ID_ESTADO,
-        CREATED_BY, CREATION_DATE, ACCION
+        FECHA_REGISTRO, ID_DIRECCION, ID_ESTADO
     ) VALUES (
         v_id_cliente,
         UPPER(p_nombre_cliente),
         p_telefono_cliente,
-        UPPER(p_correo_cliente),
+        LOWER(p_correo_cliente),
         TRUNC(TO_DATE(p_fecha_registro, 'DD/MM/YYYY')),
         v_id_direccion,
-        v_id_estado,
-        USER, SYSDATE, 'INSERT'
+        v_id_estado
     );
-
-    COMMIT;
 END;
 /
 
-CREATE OR REPLACE PROCEDURE FIDE_CLIENTES_TB_LISTAR_SP (
-    p_resultado OUT SYS_REFCURSOR
-)
-AS
+CREATE OR REPLACE PROCEDURE FIDE_CLIENTES_TB_LISTAR_SP (p_result OUT SYS_REFCURSOR)
+IS
 BEGIN
-    OPEN p_resultado FOR
-        SELECT 
-            C.ID_CLIENTE,
-            C.NOMBRE_CLIENTE,
-            C.TELEFONO_CLIENTE,
-            C.CORREO_CLIENTE,
-            TO_CHAR(C.FECHA_REGISTRO, 'DD/MM/YYYY') AS FECHA_REGISTRO,
-            D.ID_DIRECCION,
-            E.DESCRIPCION AS ESTADO
-        FROM FIDE_CLIENTES_TB C
-        JOIN FIDE_DIRECCION_TB D ON C.ID_DIRECCION = D.ID_DIRECCION
-        JOIN FIDE_ESTADO_TB E ON C.ID_ESTADO = E.ID_ESTADO;
+  OPEN p_result FOR
+    SELECT 
+      C.ID_CLIENTE,
+      C.NOMBRE_CLIENTE,
+      C.TELEFONO_CLIENTE,
+      C.CORREO_CLIENTE,
+      TO_CHAR(C.FECHA_REGISTRO, 'DD/MM/YYYY') AS FECHA_REGISTRO,
+      P.PROVINCIA || ' - ' || CAN.CANTON || ' - ' || D.DISTRITO AS DIRECCION,
+      E.DESCRIPCION AS ESTADO
+    FROM FIDE_CLIENTES_TB C
+    JOIN FIDE_DIRECCION_TB DIR ON C.ID_DIRECCION = DIR.ID_DIRECCION
+    JOIN FIDE_PROVINCIA_TB P ON DIR.ID_PROVINCIA = P.ID_PROVINCIA
+    JOIN FIDE_CANTON_TB CAN ON DIR.ID_CANTON = CAN.ID_CANTON
+    JOIN FIDE_DISTRITO_TB D ON DIR.ID_DISTRITO = D.ID_DISTRITO
+    JOIN FIDE_ESTADO_TB E ON C.ID_ESTADO = E.ID_ESTADO;
 END;
 /
 
@@ -1594,17 +1598,6 @@ BEGIN
     RETURN resultado;
 END;
 /
-
-
-
-
-
-SELECT 
-    PR.PROVINCIA || ' - ' || CA.CANTON || ' - ' || DI.DISTRITO AS DESCRIPCION
-FROM FIDE_DIRECCION_TB DIR
-JOIN FIDE_PROVINCIA_TB PR ON DIR.ID_PROVINCIA = PR.ID_PROVINCIA
-JOIN FIDE_CANTON_TB    CA ON DIR.ID_CANTON = CA.ID_CANTON
-JOIN FIDE_DISTRITO_TB DI ON DIR.ID_DISTRITO = DI.ID_DISTRITO;
 
 
 --obtener nombres de la direccion por id_direccion
