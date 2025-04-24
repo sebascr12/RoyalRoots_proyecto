@@ -18,20 +18,17 @@ class EmpleadoForm(forms.Form):
 
     funcion = forms.ChoiceField(label='Función')
     estado = forms.ChoiceField(label='Estado')
-    turno = forms.ChoiceField(label='Turno')  # Se mostrará como "08:00 - 16:00"
+    turno = forms.ChoiceField(label='Turno')  # Se muestra como "08:00 - 16:00"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Obtener y cargar funciones disponibles
         funciones = obtener_funciones_disponibles()
         self.fields['funcion'].choices = [(f, f) for f in funciones]
 
-        # Obtener y cargar estados disponibles
         estados = obtener_estados_disponibles()
         self.fields['estado'].choices = [(e, e) for e in estados]
 
-        # Obtener y cargar turnos como combinaciones de hora_inicio - hora_fin
         turnos = obtener_turnos_disponibles()
         self.fields['turno'].choices = [
             (f"{inicio}-{fin}", f"{inicio} - {fin}") for inicio, fin in turnos
